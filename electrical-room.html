@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electrical Room Sizing Calculator (NEC 110.26) | MEPCalc</title>
+<meta name="description" content="Free NEC 110.26 electrical room sizing calculator. Input equipment list, get minimum room dimensions with working clearance, dedicated space, and egress requirements per 2023 NEC.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.5}
+.container{max-width:1100px;margin:0 auto;padding:16px}
+header{background:#fff;border-bottom:2px solid #1a1a1a;padding:16px 0}
+header .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.logo{font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#1a1a1a;text-decoration:none}
+.logo span{color:#2563eb}
+nav a{color:#555;text-decoration:none;font-size:14px;margin-left:16px}
+nav a:hover{color:#1a1a1a}
+h1{font-size:24px;font-weight:700;margin:24px 0 8px;letter-spacing:-0.5px}
+.subtitle{color:#555;font-size:15px;margin-bottom:24px}
+label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px}
+input,select{padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;width:100%}
+input:focus,select:focus{outline:none;border-color:#2563eb}
+.btn{padding:8px 16px;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary{background:#1a1a1a;color:#fff}
+.btn-primary:hover{background:#333}
+.btn-secondary{background:#fff;color:#1a1a1a;border:1px solid #ccc}
+.btn-secondary:hover{background:#f5f5f5}
+.btn-danger{background:#dc2626;color:#fff;font-size:12px;padding:4px 8px}
+.btn-danger:hover{background:#b91c1c}
+.panel{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px}
+.panel h2{font-size:16px;font-weight:700;margin-bottom:12px}
+.panel h3{font-size:14px;font-weight:700;margin:16px 0 8px}
+.equip-row{display:grid;grid-template-columns:1fr 90px 90px 90px 120px 40px;gap:8px;padding:8px 0;border-bottom:1px solid #eee;align-items:end}
+.equip-header{display:grid;grid-template-columns:1fr 90px 90px 90px 120px 40px;gap:8px;padding:4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;border-bottom:1px solid #ddd}
+.equip-row:last-of-type{border-bottom:none}
+.add-row{margin-top:12px;display:flex;gap:8px}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.result-card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px}
+.result-card.highlight{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.result-card.highlight .r-label{color:#aaa}
+.result-card.warning{border-color:#f59e0b;background:#fffbeb}
+.result-card.danger{border-color:#dc2626;background:#fef2f2}
+.r-value{font-size:28px;font-weight:700}
+.r-label{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-top:4px}
+.r-detail{font-size:13px;margin-top:8px;color:#555}
+.result-card.highlight .r-detail{color:#ccc}
+.code-ref{display:inline-block;background:#f0f0f0;padding:2px 6px;border-radius:3px;font-size:12px;font-family:monospace;color:#555}
+.result-card.highlight .code-ref{background:#333;color:#aaa}
+.clearance-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.clearance-table th,.clearance-table td{padding:6px 8px;border:1px solid #ddd;text-align:center}
+.clearance-table th{background:#f5f5f5;font-weight:600;font-size:11px;text-transform:uppercase}
+.clearance-table .active{background:#e0f2fe;font-weight:700}
+.layout-diagram{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:16px;margin:12px 0;text-align:center}
+.layout-diagram canvas{max-width:100%}
+.flag{display:inline-block;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:600;margin:4px 4px 4px 0}
+.flag-pass{background:#dcfce7;color:#166534}
+.flag-warn{background:#fef3c7;color:#92400e}
+.flag-fail{background:#fee2e2;color:#991b1b}
+.methodology{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-top:24px;font-size:14px}
+.methodology h2{font-size:18px;margin-bottom:12px}
+.methodology p,.methodology li{color:#444;margin-bottom:8px}
+.methodology ul{padding-left:20px}
+footer{text-align:center;padding:24px;font-size:13px;color:#777;border-top:1px solid #eee;margin-top:32px}
+footer a{color:#555;text-decoration:none}
+footer a:hover{color:#1a1a1a}
+@media(max-width:768px){
+  .equip-row,.equip-header{grid-template-columns:1fr;gap:4px}
+  .equip-header{display:none}
+  .results{grid-template-columns:1fr}
+}
+@media print{header,.btn,.add-row,footer,nav{display:none!important}}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8335376690790226" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<a href="index.html" class="logo">MEP<span>Calc</span></a>
+<nav>
+<a href="index.html">All Tools</a>
+<a href="scope-gap-matrix.html">Scope Gap Matrix</a>
+<a href="general-conditions.html">Gen. Conditions</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<h1>Electrical Room Sizing Calculator</h1>
+<p class="subtitle">Input your electrical equipment list. Get minimum room dimensions per NEC 110.26 working clearance, dedicated space, and egress requirements (2023 NEC).</p>
+
+<div class="panel">
+<h2>Configuration</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px">
+<div>
+<label>Maximum Voltage (Nominal)</label>
+<select id="voltageLevel" onchange="recalc()">
+<option value="150">120/208V (0-150V to ground)</option>
+<option value="277" selected>277/480V (151-600V to ground)</option>
+<option value="1000">601-1000V (verify with AHJ — see note)</option>
+</select>
+</div>
+<div>
+<label>Arrangement</label>
+<select id="arrangement" onchange="recalc()">
+<option value="single">Single Row (wall behind)</option>
+<option value="facing">Back-to-Back / Facing</option>
+</select>
+</div>
+<div>
+<label>Ceiling Height (ft)</label>
+<input type="number" id="ceilingHeight" value="10" min="7" step="0.5" onchange="recalc()">
+</div>
+<div>
+<label>Largest Overcurrent Device (Amps)</label>
+<input type="number" id="largestOCPD" value="800" min="0" onchange="recalc()">
+</div>
+</div>
+</div>
+
+<div class="panel">
+<h2>Equipment List</h2>
+<div class="equip-header">
+<div>Equipment Description</div>
+<div>Width (in)</div>
+<div>Depth (in)</div>
+<div>Height (in)</div>
+<div>Type</div>
+<div></div>
+</div>
+<div id="equipList"></div>
+<div class="add-row">
+<button class="btn btn-secondary" onclick="addEquipment('switchgear')">+ Switchgear</button>
+<button class="btn btn-secondary" onclick="addEquipment('panel')">+ Panel</button>
+<button class="btn btn-secondary" onclick="addEquipment('transformer')">+ Transformer</button>
+<button class="btn btn-secondary" onclick="addEquipment('ats')">+ Transfer Switch</button>
+<button class="btn btn-secondary" onclick="addEquipment('custom')">+ Custom</button>
+</div>
+</div>
+
+<div class="results" id="resultsContainer"></div>
+
+<div class="panel" id="codeRefPanel" style="display:none">
+<h2>NEC 110.26 Working Clearance Reference</h2>
+<table class="clearance-table">
+<thead>
+<tr><th>Voltage to Ground</th><th>Condition 1<br><span style="font-weight:400;text-transform:none">Exposed live parts on one side,<br>no live or grounded parts on other</span></th><th>Condition 2<br><span style="font-weight:400;text-transform:none">Exposed live parts on one side,<br>grounded parts on other</span></th><th>Condition 3<br><span style="font-weight:400;text-transform:none">Exposed live parts on<br>both sides</span></th></tr>
+</thead>
+<tbody id="clearanceTableBody">
+</tbody>
+</table>
+<p style="font-size:12px;color:#777;margin-top:8px"><strong>Condition 1:</strong> Equipment on one side, no live or grounded parts opposite (e.g., drywall wall). <strong>Condition 2:</strong> Equipment on one side, grounded metal opposite (e.g., concrete block, metal wall). <strong>Condition 3:</strong> Live parts on both sides (e.g., facing panels).</p>
+</div>
+
+<div class="methodology">
+<h2>How This Works</h2>
+<p>This calculator applies NEC 110.26 requirements for working space around electrical equipment. It determines minimum room dimensions based on:</p>
+<ul>
+<li><strong>Working clearance depth</strong> (NEC 110.26(A)(1)) — front clearance based on voltage and condition (1, 2, or 3)</li>
+<li><strong>Working clearance width</strong> (NEC 110.26(A)(2)) — 30" minimum or equipment width, whichever is greater</li>
+<li><strong>Headroom</strong> (NEC 110.26(A)(3)) — 6'-6" minimum or equipment height, whichever is greater</li>
+<li><strong>Dedicated equipment space</strong> (NEC 110.26(E)) — width and depth of equipment extending from floor to 6' above or structural ceiling</li>
+<li><strong>Entrance/egress</strong> (NEC 110.26(C)) — at least one entrance not less than 24" wide x 6'-6" high; two entrances required for large equipment (rated 1200A+ or 6'+ wide) when the room depth exceeds the required working clearance</li>
+</ul>
+<p><strong>2023 NEC Updates:</strong> NEC 110.26(A)(4) now requires clearance for equipment doors in the open position. Working space cannot be impeded by open doors to less than the required width. This calculator accounts for swinging panel doors.</p>
+<p><strong>Voltage scope:</strong> NEC 110.26 applies to equipment rated 1000V nominal or less. For equipment over 1000V (medium voltage switchgear, unit substations), working clearances are governed by <strong>NEC 110.34</strong> and Table 110.34(A), which have different and generally larger clearance requirements. This calculator covers 110.26 only. The 601-1000V row was added to NEC Table 110.26(A)(1) in the 2017 cycle — values in this range should be verified with your Authority Having Jurisdiction (AHJ).</p>
+<p><strong>Sources:</strong> NFPA 70 National Electrical Code 2023 Edition, Article 110.26. Equipment dimensions are typical manufacturer sizes — verify with actual submittals.</p>
+<p><strong>Disclaimer:</strong> This tool provides minimum code-compliant dimensions. Actual room sizing should account for maintenance access, future expansion, ventilation requirements, and local amendments to the NEC. Always verify with the AHJ (Authority Having Jurisdiction).</p>
+<p style="margin-top:12px;padding:10px;background:#fff8f0;border:1px solid #f0d8b0;border-radius:4px;font-size:12px;color:#8a6d3b;line-height:1.6"><strong>Code Edition Notice:</strong> Clearance values are from NEC 2023 (NFPA 70), Table 110.26(A)(1). The NEC updates every 3 years — the 2026 edition has been published. <strong>State adoption varies widely: as of early 2026, DE/NJ/CT enforce NEC 2020; PA enforces NEC 2017.</strong> The 601-1000V row was added in the 2017 cycle and may not be recognized in all jurisdictions. For equipment over 1000V, NEC 110.34 applies (not covered here). Always confirm which NEC edition your AHJ has adopted before using these clearances for design.</p>
+</div>
+</div>
+
+<footer>
+<p>Built by <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank">The Architect of The Hive</a> · <a href="https://thehivemakes.com" target="_blank">thehivemakes.com</a> · <a href="https://thehivemakes.com/privacy.html" style="color:#999;font-size:11px;">Privacy</a> · <a href="https://thehivemakes.com/terms.html" style="color:#999;font-size:11px;">Terms</a> · <a href="https://thehivemakes.com/disclosures.html" style="color:#999;font-size:11px;">Disclosures</a> &middot; Free tools for people who build things &middot; <a href="index.html">MEPCalc</a></p>
+</footer>
+
+<script src="mepcalc-core.js"></script>
+<script>
+// NEC 110.26(A)(1) Table — Working clearance depth in FEET
+// [voltage range]: {condition1, condition2, condition3}
+// NEC 110.26(A)(1) — applies to equipment 1000V nominal or less
+// For >1000V, refer to NEC 110.34 (separate requirements)
+const CLEARANCE_TABLE = {
+  '150':  {c1: 3.0, c2: 3.0, c3: 3.0,  label: '0 - 150V'},
+  '277':  {c1: 3.0, c2: 3.5, c3: 4.0,  label: '151 - 600V'},
+  '1000': {c1: 3.0, c2: 4.0, c3: 5.0,  label: '601 - 1,000V (verify with AHJ)'},
+};
+
+// Default equipment templates {desc, width(in), depth(in), height(in), type}
+const TEMPLATES = {
+  switchgear:   {desc: 'Main Switchgear 480V', w: 90, d: 30, h: 90, type: 'switchgear'},
+  panel:        {desc: 'Distribution Panel 208/120V', w: 20, d: 8, h: 60, type: 'panel'},
+  transformer:  {desc: 'Dry Transformer 480-208/120V', w: 36, d: 30, h: 48, type: 'transformer'},
+  ats:          {desc: 'Automatic Transfer Switch', w: 36, d: 24, h: 72, type: 'ats'},
+  custom:       {desc: 'Custom Equipment', w: 24, d: 24, h: 72, type: 'custom'},
+};
+
+let equipment = [];
+let nextId = 0;
+
+function addEquipment(templateKey) {
+  const t = TEMPLATES[templateKey];
+  equipment.push({id: nextId++, desc: t.desc, w: t.w, d: t.d, h: t.h, type: t.type});
+  renderEquipment();
+  recalc();
+}
+
+function removeEquipment(id) {
+  equipment = equipment.filter(e => e.id !== id);
+  renderEquipment();
+  recalc();
+}
+
+function renderEquipment() {
+  const list = document.getElementById('equipList');
+  list.innerHTML = equipment.map(e => `
+    <div class="equip-row">
+      <div><input type="text" value="${e.desc}" onchange="updEquip(${e.id},'desc',this.value)"></div>
+      <div><input type="number" value="${e.w}" min="1" onchange="updEquip(${e.id},'w',+this.value)"></div>
+      <div><input type="number" value="${e.d}" min="1" onchange="updEquip(${e.id},'d',+this.value)"></div>
+      <div><input type="number" value="${e.h}" min="1" onchange="updEquip(${e.id},'h',+this.value)"></div>
+      <div style="font-size:12px;color:#777">${e.type}</div>
+      <div><button class="btn btn-danger" onclick="removeEquipment(${e.id})">X</button></div>
+    </div>
+  `).join('');
+}
+
+function updEquip(id, field, val) {
+  const e = equipment.find(eq => eq.id === id);
+  if (e) { e[field] = val; recalc(); }
+}
+
+function getCondition() {
+  return document.getElementById('arrangement').value === 'facing' ? 3 : 2;
+}
+
+function recalc() {
+  if (equipment.length === 0) {
+    document.getElementById('resultsContainer').innerHTML = '<div class="panel" style="grid-column:1/-1;text-align:center;color:#777;padding:40px">Add equipment above to calculate room dimensions.</div>';
+    document.getElementById('codeRefPanel').style.display = 'none';
+    return;
+  }
+
+  const voltage = document.getElementById('voltageLevel').value;
+  const condition = getCondition();
+  const ceilingHt = parseFloat(document.getElementById('ceilingHeight').value) || 10;
+  const largestOCPD = parseInt(document.getElementById('largestOCPD').value) || 0;
+
+  const clearances = CLEARANCE_TABLE[voltage];
+  const condKey = 'c' + condition;
+  const reqDepth = clearances[condKey]; // feet
+
+  // Calculate total equipment wall width (assume single row, side by side)
+  let totalEquipWidth = 0; // inches
+  let maxEquipDepth = 0;   // inches
+  let maxEquipHeight = 0;  // inches
+  let hasPanelDoors = false;
+
+  equipment.forEach(e => {
+    totalEquipWidth += e.w;
+    if (e.d > maxEquipDepth) maxEquipDepth = e.d;
+    if (e.h > maxEquipHeight) maxEquipHeight = e.h;
+    if (e.type === 'panel' || e.type === 'switchgear' || e.type === 'ats') hasPanelDoors = true;
+  });
+
+  // Add 6" gap between pieces
+  if (equipment.length > 1) totalEquipWidth += (equipment.length - 1) * 6;
+
+  // NEC 110.26(A)(2): Width = 30" or equipment width, whichever greater
+  const minWorkingWidth = Math.max(30, totalEquipWidth); // inches
+
+  // NEC 110.26(A)(3): Headroom = 6.5 ft or equipment height
+  const minHeadroom = Math.max(6.5, maxEquipHeight / 12);
+
+  // Room depth = equipment depth + working clearance (+ rear clearance if facing)
+  let roomDepthFt;
+  if (document.getElementById('arrangement').value === 'facing') {
+    // Back-to-back: two rows of equipment with clearance between
+    roomDepthFt = (maxEquipDepth / 12) * 2 + reqDepth;
+  } else {
+    // Single row against wall: equipment depth + front clearance
+    roomDepthFt = (maxEquipDepth / 12) + reqDepth;
+  }
+
+  // 2023 NEC 110.26(A)(4): Panel doors — add ~30" swing clearance zone
+  let doorNote = '';
+  if (hasPanelDoors) {
+    doorNote = 'NEC 110.26(A)(4): Working space must not be impeded by open equipment doors. Ensure clearance depth accommodates fully open doors.';
+  }
+
+  // Room width in feet
+  const roomWidthFt = Math.max(minWorkingWidth / 12, 6); // min 6' practical
+
+  // NEC 110.26(E): Dedicated space — width and depth of equipment, floor to 6' above or ceiling
+  const dedicatedSpaceHeight = Math.max(6, ceilingHt);
+
+  // NEC 110.26(C)(2): Second entrance required?
+  // For equipment rated 1200A+ OR 6'+ wide, if working space depth >= required clearance
+  const needSecondExit = (largestOCPD >= 1200 || totalEquipWidth >= 72) && roomDepthFt >= 6;
+
+  // Minimum entrance: 24" wide x 6.5' tall
+  const entranceWidth = 24; // inches
+  const entranceHeight = 6.5; // feet
+
+  // Render results
+  const res = document.getElementById('resultsContainer');
+  res.innerHTML = `
+    <div class="result-card highlight" style="grid-column:1/-1">
+      <div class="r-value">${roomWidthFt.toFixed(1)}' W &times; ${roomDepthFt.toFixed(1)}' D &times; ${Math.max(minHeadroom, ceilingHt).toFixed(1)}' H</div>
+      <div class="r-label">Minimum Room Dimensions (NEC 110.26)</div>
+      <div class="r-detail">Room area: ${(roomWidthFt * roomDepthFt).toFixed(0)} SF &mdash; Equipment wall: ${(totalEquipWidth/12).toFixed(1)}' total width</div>
+    </div>
+
+    <div class="result-card">
+      <div class="r-value">${reqDepth.toFixed(1)} ft</div>
+      <div class="r-label">Required Working Clearance (Depth)</div>
+      <div class="r-detail">
+        <span class="code-ref">NEC 110.26(A)(1)</span>
+        ${clearances.label} &mdash; Condition ${condition}
+        ${doorNote ? '<br><span class="flag flag-warn">' + doorNote + '</span>' : ''}
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="r-value">${(minWorkingWidth/12).toFixed(1)} ft <span style="font-size:14px;font-weight:400">(${minWorkingWidth}")</span></div>
+      <div class="r-label">Minimum Working Width</div>
+      <div class="r-detail"><span class="code-ref">NEC 110.26(A)(2)</span> 30" or equipment width, whichever greater</div>
+    </div>
+
+    <div class="result-card">
+      <div class="r-value">${minHeadroom.toFixed(1)} ft</div>
+      <div class="r-label">Minimum Headroom</div>
+      <div class="r-detail"><span class="code-ref">NEC 110.26(A)(3)</span> 6'-6" minimum or equipment height
+      ${ceilingHt < minHeadroom ? '<br><span class="flag flag-fail">Ceiling height (' + ceilingHt + '\') is below minimum headroom!</span>' : '<br><span class="flag flag-pass">Ceiling height ' + ceilingHt + '\' meets requirement</span>'}
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="r-value">${dedicatedSpaceHeight.toFixed(1)} ft</div>
+      <div class="r-label">Dedicated Space Above Equipment</div>
+      <div class="r-detail"><span class="code-ref">NEC 110.26(E)</span> No piping, ducts, or leak-prone equipment above electrical gear within the dedicated space (width and depth of equipment, floor to 6' above or structural ceiling)</div>
+    </div>
+
+    <div class="result-card ${needSecondExit ? 'danger' : ''}">
+      <div class="r-value">${needSecondExit ? 'Two Exits Required' : 'One Exit Sufficient'}</div>
+      <div class="r-label">Egress Requirements</div>
+      <div class="r-detail">
+        <span class="code-ref">NEC 110.26(C)(2)</span>
+        Min entrance: 24" W &times; 6'-6" H
+        ${needSecondExit
+          ? '<br><span class="flag flag-fail">Equipment rated ' + largestOCPD + 'A and/or ' + (totalEquipWidth/12).toFixed(1) + '\' wide &mdash; second exit required at opposite end of working space</span>'
+          : '<br><span class="flag flag-pass">Equipment below 1200A threshold and under 6\' wide</span>'
+        }
+      </div>
+    </div>
+
+    <div class="result-card" style="grid-column:1/-1">
+      <div class="r-label" style="margin-bottom:8px">Equipment Summary</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid #eee;font-weight:600"><td style="padding:4px">Equipment</td><td>W</td><td>D</td><td>H</td></tr>
+        ${equipment.map(e => `<tr style="border-bottom:1px solid #eee"><td style="padding:4px">${e.desc}</td><td>${e.w}"</td><td>${e.d}"</td><td>${e.h}"</td></tr>`).join('')}
+        <tr style="font-weight:700"><td style="padding:4px">Total Wall Width</td><td colspan="3">${totalEquipWidth}" (${(totalEquipWidth/12).toFixed(1)}')</td></tr>
+      </table>
+    </div>
+  `;
+
+  // Render clearance reference table
+  document.getElementById('codeRefPanel').style.display = 'block';
+  const tbody = document.getElementById('clearanceTableBody');
+  tbody.innerHTML = Object.keys(CLEARANCE_TABLE).map(v => {
+    const c = CLEARANCE_TABLE[v];
+    const isActive = v === voltage;
+    return `<tr${isActive ? ' class="active"' : ''}>
+      <td>${c.label}</td>
+      <td${isActive && condition===1 ? ' style="background:#bfdbfe;font-weight:700"' : ''}>${c.c1} ft</td>
+      <td${isActive && condition===2 ? ' style="background:#bfdbfe;font-weight:700"' : ''}>${c.c2} ft</td>
+      <td${isActive && condition===3 ? ' style="background:#bfdbfe;font-weight:700"' : ''}>${c.c3} ft</td>
+    </tr>`;
+  }).join('');
+}
+
+// Initialize with common equipment
+addEquipment('switchgear');
+addEquipment('panel');
+addEquipment('transformer');
+
+// --- V2: Continue-to buttons ---
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof MEPCalc === 'undefined') return;
+  const el = document.querySelector('.methodology');
+  if (el) {
+    MEPCalc.renderContinueButtons(el, [
+      {tool: 'plenum-space', label: 'Plenum Feasibility'},
+      {tool: 'rom-estimator', label: 'ROM Estimator'},
+    ]);
+  }
+});
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #eee;padding:12px 16px;font-size:12px;color:#777;text-align:center;z-index:9999;">This site uses cookies for ads. <a href="https://thehivemakes.com/privacy.html" style="color:#2563eb">Privacy Policy</a>. <button onclick="document.getElementById('cookie-banner').style.display='none';localStorage.setItem('cookie-ok','1');" style="margin-left:12px;padding:4px 14px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Got it</button></div>
+<script>if(!localStorage.getItem("cookie-ok"))document.getElementById("cookie-banner").style.display="block";</script>
+</body>
+</html>

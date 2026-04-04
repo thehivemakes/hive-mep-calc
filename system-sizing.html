@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEP System Rough Sizing | MEPCalc</title>
+<meta name="description" content="Free MEP system rough sizing calculator. Estimate HVAC tonnage, electrical service size, generator capacity, plumbing demand, fire protection, and mechanical room sizing by building type.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.5}
+.container{max-width:1000px;margin:0 auto;padding:16px}
+header{background:#fff;border-bottom:2px solid #1a1a1a;padding:16px 0}
+header .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.logo{font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#1a1a1a;text-decoration:none}
+.logo span{color:#2563eb}
+nav a{color:#555;text-decoration:none;font-size:14px;margin-left:16px}
+nav a:hover{color:#1a1a1a}
+h1{font-size:24px;font-weight:700;margin:24px 0 8px;letter-spacing:-0.5px}
+.subtitle{color:#555;font-size:15px;margin-bottom:24px}
+label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px}
+input,select{padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;width:100%}
+input:focus,select:focus{outline:none;border-color:#2563eb}
+.btn{padding:8px 16px;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary{background:#1a1a1a;color:#fff}
+.btn-primary:hover{background:#333}
+.btn-secondary{background:#fff;color:#1a1a1a;border:1px solid #ccc}
+.panel{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px}
+.panel h2{font-size:16px;font-weight:700;margin-bottom:12px}
+.input-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.r-card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px}
+.r-card h3{font-size:14px;font-weight:700;margin-bottom:8px;color:#555;text-transform:uppercase;letter-spacing:0.5px}
+.r-line{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.r-line:last-child{border-bottom:none}
+.r-line .r-val{font-weight:600}
+.r-line .r-rule{font-size:11px;color:#777;margin-top:2px}
+.r-highlight{font-size:22px;font-weight:700;margin-bottom:4px}
+.r-sub{font-size:12px;color:#555}
+.system-rec{background:#f0f4ff;border:1px solid #bfdbfe;border-radius:4px;padding:8px 12px;font-size:13px;margin-top:8px}
+.export-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.methodology{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-top:24px;font-size:14px}
+.methodology h2{font-size:18px;margin-bottom:12px}
+.methodology p,.methodology li{color:#444;margin-bottom:8px}
+.methodology ul{padding-left:20px}
+.rule-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+.rule-table th,.rule-table td{padding:6px 8px;border:1px solid #ddd;text-align:center}
+.rule-table th{background:#f5f5f5;font-weight:600;font-size:11px;text-transform:uppercase}
+.rule-table td:first-child{text-align:left;font-weight:500}
+.rule-table tr.active{background:#f0f4ff;font-weight:600}
+footer{text-align:center;padding:24px;font-size:13px;color:#777;border-top:1px solid #eee;margin-top:32px}
+footer a{color:#555;text-decoration:none}
+@media(max-width:768px){.results-grid{grid-template-columns:1fr}.input-grid{grid-template-columns:1fr}}
+@media print{header,.btn,.export-row,footer,nav{display:none!important}}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8335376690790226" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<a href="index.html" class="logo">MEP<span>Calc</span></a>
+<nav>
+<a href="index.html">All Tools</a>
+<a href="rom-estimator.html">ROM Estimator</a>
+<a href="plenum-space.html">Plenum Space</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<h1>MEP System Rough Sizing</h1>
+<p class="subtitle">Quick preconstruction feasibility: estimate HVAC tonnage, electrical service size, generator capacity, plumbing demand, fire protection, and space requirements by building type.</p>
+
+<div class="panel">
+<h2>Project Inputs</h2>
+<div class="input-grid">
+<div>
+<label>Building Type</label>
+<select id="buildingType" onchange="recalc()"></select>
+</div>
+<div>
+<label>Gross Square Footage</label>
+<input type="number" id="sqft" value="85000" min="1000" onchange="recalc()">
+</div>
+<div>
+<label>Number of Stories</label>
+<input type="number" id="stories" value="3" min="1" max="50" onchange="recalc()">
+</div>
+<div>
+<label>Building Height (ft)</label>
+<input type="number" id="height" value="42" min="10" onchange="recalc()">
+</div>
+<div>
+<label>Climate</label>
+<select id="climate" onchange="recalc()">
+<option value="temperate" selected>Temperate (Mid-Atlantic)</option>
+<option value="hot-humid">Hot & Humid (Southeast)</option>
+<option value="hot-dry">Hot & Dry (Southwest)</option>
+<option value="cold">Cold (Northeast/Midwest)</option>
+<option value="mild">Mild (Pacific NW)</option>
+</select>
+</div>
+<div>
+<label>City Water Pressure (PSI)</label>
+<input type="number" id="waterPSI" value="50" min="20" max="100" onchange="recalc()">
+</div>
+</div>
+</div>
+
+<div class="export-row">
+<div style="flex:1"></div>
+<button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+<button class="btn btn-primary" onclick="window.print()">Print / PDF</button>
+</div>
+
+<div class="results-grid" id="resultsGrid"></div>
+
+<div class="panel" id="rulesPanel"></div>
+
+<div class="methodology">
+<h2>How This Works</h2>
+<p>This tool uses published engineering rules of thumb to estimate MEP system sizes for preconstruction feasibility. These are order-of-magnitude estimates — not engineering calculations. They answer "how big are the systems?" before detailed design begins.</p>
+<p><strong>When to use:</strong> Early project pursuits, feasibility studies, space planning, utility coordination. Not for final equipment selection or permit drawings.</p>
+<p><strong>Accuracy:</strong> Rules of thumb are typically within +/- 25-30% of final engineered values. They are intentionally conservative (slightly oversized) for budgeting purposes.</p>
+<p><strong>Sources:</strong> ASHRAE Handbook of Fundamentals (Chapter 18), ASHRAE Applications Handbook (Chapters 9, 17, 22), NEC Article 220, NFPA 13/14, industry preconstruction benchmarks. These are industry estimates intended as starting points — verify against your project-specific conditions and local engineering practice.</p>
+<p><strong>Climate adjustment:</strong> Cooling loads are adjusted by climate zone. Hot-humid climates add 15-25% to cooling tonnage. Cold climates reduce cooling but increase heating. The tool shows both the base rule and the climate-adjusted result.</p>
+<p style="margin-top:12px;padding:10px;background:#fff8f0;border:1px solid #f0d8b0;border-radius:4px;font-size:12px;color:#8a6d3b;line-height:1.6"><strong>Code Edition Notice:</strong> Sizing rules reference ASHRAE Handbooks, NEC Article 220 (branch circuit/feeder calculations), and NFPA 13 (sprinkler head spacing). These standards update on 3-year cycles. <strong>Fire protection head spacing uses NFPA 13 ordinary hazard values (130 SF/head) — your AHJ may enforce a different edition with different coverage areas.</strong> Electrical service sizing uses demand factor estimates, not NEC Article 220 load calculations. Generator sizing percentages are planning estimates, not NEC 700/701/702 requirements. Always verify system sizes with a licensed professional engineer and confirm code editions adopted by your Authority Having Jurisdiction (AHJ).</p>
+</div>
+</div>
+
+<footer>
+<p>Built by <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank">The Architect of The Hive</a> · <a href="https://thehivemakes.com" target="_blank">thehivemakes.com</a> · <a href="https://thehivemakes.com/privacy.html" style="color:#999;font-size:11px;">Privacy</a> · <a href="https://thehivemakes.com/terms.html" style="color:#999;font-size:11px;">Terms</a> · <a href="https://thehivemakes.com/disclosures.html" style="color:#999;font-size:11px;">Disclosures</a> &middot; Free tools for people who build things &middot; <a href="index.html">MEPCalc</a></p>
+</footer>
+
+<script src="mepcalc-core.js"></script>
+<script>
+// 6x3 VERIFIED DATA — April 2, 2026. See Protocols/research_runs/6x3_SystemSizing_2026-04-02.md
+// Sources: ASHRAE Handbooks, NEC Art. 220, NFPA 13, HVAC-Eng.com, EngProGuides, Electrical-Knowhow
+// Corrections applied from 6x3: Office SF/ton widened, K-12 SF/ton lowered, Industrial fpSFPerHead
+// corrected to 130 (was 100 — NFPA 13 error), Retail SF/ton widened, Office/K-12/Higher-Ed W/SF adjusted
+const SIZING_DATA = {
+  'senior-living': {
+    label:'Senior Living / Assisted Living',
+    sfPerTon:{low:300, mid:375, high:450},
+    wPerSF:{low:6, mid:9, high:12},
+    genPct:{low:0.30, mid:0.40, high:0.50},
+    heatingBTUSF:{low:25, mid:35, high:45},
+    fixturePer1000SF: 8,
+    mechRoomPct: 0.045,
+    elecRoomPct: 0.015,
+    shaftSFPerFloor: 20,
+    systemRec:'Split between individual PTACs/PTHPs for residential units and central AHUs for common areas. Consider VRF for mid-rise buildings.',
+    fpHazard:'light', fpSFPerHead:130,
+  },
+  'hospital': {
+    label:'Hospital / Acute Care',
+    sfPerTon:{low:200, mid:250, high:300},
+    wPerSF:{low:12, mid:17, high:22},
+    genPct:{low:0.40, mid:0.50, high:0.60},
+    heatingBTUSF:{low:35, mid:50, high:65},
+    fixturePer1000SF: 12,
+    mechRoomPct: 0.06,
+    elecRoomPct: 0.02,
+    shaftSFPerFloor: 30,
+    systemRec:'Central chilled water plant with AHUs. 100% outside air for many areas per ASHRAE 170. Redundant chillers and boilers required.',
+    fpHazard:'ordinary-1', fpSFPerHead:130,
+  },
+  'outpatient': {
+    label:'Outpatient Clinic / MOB',
+    sfPerTon:{low:275, mid:350, high:425},
+    wPerSF:{low:8, mid:12, high:16},
+    genPct:{low:0.25, mid:0.35, high:0.45},
+    heatingBTUSF:{low:25, mid:35, high:45},
+    fixturePer1000SF: 10,
+    mechRoomPct: 0.05,
+    elecRoomPct: 0.015,
+    shaftSFPerFloor: 22,
+    systemRec:'VAV with central plant for larger facilities. Packaged rooftop for smaller. Consider VRF for clinics under 20,000 SF.',
+    fpHazard:'light', fpSFPerHead:130,
+  },
+  'k12': {
+    label:'K-12 Education',
+    sfPerTon:{low:250, mid:325, high:400},  // 6x3 corrected: was 350-500, sources say 250-400 (high occupancy density)
+    wPerSF:{low:5, mid:6.5, high:8},        // 6x3 corrected: was 5-10, sources converge on 5-8
+    genPct:{low:0.15, mid:0.20, high:0.25},
+    heatingBTUSF:{low:25, mid:35, high:45},
+    fixturePer1000SF: 5,
+    mechRoomPct: 0.04,
+    elecRoomPct: 0.012,
+    shaftSFPerFloor: 15,
+    systemRec:'VAV or DOAS with energy recovery for classrooms. Consider geothermal for long-term value. Kitchen and gym require separate systems.',
+    fpHazard:'light', fpSFPerHead:130,
+  },
+  'higher-ed': {
+    label:'Higher Education / Laboratory',
+    sfPerTon:{low:100, mid:175, high:300},   // 6x3 widened: was 100-200, sources say 100-300 (lab vs classroom mix)
+    wPerSF:{low:10, mid:17, high:25},        // 6x3 corrected: was 15-30, sources say 10-25 (30 only extreme cases)
+    genPct:{low:0.25, mid:0.35, high:0.45},
+    heatingBTUSF:{low:40, mid:55, high:70},
+    fixturePer1000SF: 6,
+    mechRoomPct: 0.07,
+    elecRoomPct: 0.02,
+    shaftSFPerFloor: 35,
+    systemRec:'100% outside air with high-efficiency energy recovery. Lab exhaust dominates — fume hood count drives system size. Separate systems for lab vs classroom areas.',
+    fpHazard:'ordinary-1', fpSFPerHead:130,  // 6x3 corrected: was 100, NFPA 13 says 130 for ordinary hazard
+  },
+  'office': {
+    label:'Commercial Office',
+    sfPerTon:{low:300, mid:400, high:500},   // 6x3 corrected: was 350-500, sources say 300-400 typical
+    wPerSF:{low:6, mid:9, high:12},          // 6x3 corrected: was 8-15, sources say 6-12 (without electric heat)
+    genPct:{low:0.15, mid:0.20, high:0.30},
+    heatingBTUSF:{low:20, mid:30, high:40},
+    fixturePer1000SF: 4,
+    mechRoomPct: 0.035,
+    elecRoomPct: 0.012,
+    shaftSFPerFloor: 18,
+    systemRec:'VAV with central chiller plant for buildings over 50,000 SF. Packaged rooftop units for smaller. Consider VRF for tenant fit-out flexibility.',
+    fpHazard:'light', fpSFPerHead:130,
+  },
+  'industrial': {
+    label:'Industrial / Warehouse',
+    sfPerTon:{low:400, mid:800, high:1200},  // 6x3 corrected: was 600-1200, sources say 400-1200 (manufacturing vs warehouse)
+    wPerSF:{low:2, mid:5, high:8},           // 6x3 corrected: was 3-8, sources say 2-8 (warehouse at low end)
+    genPct:{low:0.10, mid:0.15, high:0.20},
+    heatingBTUSF:{low:15, mid:25, high:35},
+    fixturePer1000SF: 2,
+    mechRoomPct: 0.02,
+    elecRoomPct: 0.01,
+    shaftSFPerFloor: 10,
+    systemRec:'Gas-fired unit heaters for heating. Evaporative cooling or minimal DX for comfort cooling. High-bay fans for destratification. Office areas get separate packaged units. Manufacturing with heavy equipment loads requires separate analysis.',
+    fpHazard:'ordinary-1', fpSFPerHead:130,  // 6x3 CRITICAL FIX: was 100, NFPA 13 says 130 for ordinary hazard
+  },
+  'retail': {
+    label:'Retail',
+    sfPerTon:{low:200, mid:350, high:500},   // 6x3 corrected: was 300-500, sources say 200-500 (dense retail lower)
+    wPerSF:{low:6, mid:9, high:12},
+    genPct:{low:0.10, mid:0.15, high:0.20},
+    heatingBTUSF:{low:20, mid:30, high:40},
+    fixturePer1000SF: 3,
+    mechRoomPct: 0.03,
+    elecRoomPct: 0.01,
+    shaftSFPerFloor: 12,
+    systemRec:'Packaged rooftop units typical. Restaurant tenants require separate kitchen exhaust and makeup air units. High ceilings increase distribution costs.',
+    fpHazard:'ordinary-1', fpSFPerHead:130,  // 6x3 CRITICAL FIX: was 100, NFPA 13 says 130 for ordinary hazard
+  },
+  'multifamily': {
+    label:'Multifamily Residential',
+    sfPerTon:{low:400, mid:500, high:600},
+    wPerSF:{low:5, mid:8, high:11},
+    genPct:{low:0.15, mid:0.25, high:0.35},
+    heatingBTUSF:{low:20, mid:30, high:40},
+    fixturePer1000SF: 7,
+    mechRoomPct: 0.03,
+    elecRoomPct: 0.012,
+    shaftSFPerFloor: 18,
+    systemRec:'Individual PTACs, PTHPs, or split systems per unit. Central boiler for domestic hot water. VRF gaining market share for mid-rise and high-rise.',
+    fpHazard:'light', fpSFPerHead:130,
+  },
+};
+
+const CLIMATE_FACTORS = {
+  'temperate':  {cool:1.0,  heat:1.0,  label:'Temperate (Mid-Atlantic)'},
+  'hot-humid':  {cool:1.25, heat:0.7,  label:'Hot & Humid'},
+  'hot-dry':    {cool:1.15, heat:0.75, label:'Hot & Dry'},
+  'cold':       {cool:0.85, heat:1.3,  label:'Cold'},
+  'mild':       {cool:0.80, heat:0.9,  label:'Mild (Pacific NW)'},
+};
+
+function recalc() {
+  const typeKey = document.getElementById('buildingType').value;
+  const sqft = parseInt(document.getElementById('sqft').value) || 85000;
+  const stories = parseInt(document.getElementById('stories').value) || 3;
+  const height = parseInt(document.getElementById('height').value) || 42;
+  const climate = document.getElementById('climate').value;
+  const waterPSI = parseInt(document.getElementById('waterPSI').value) || 50;
+
+  const d = SIZING_DATA[typeKey];
+  const cf = CLIMATE_FACTORS[climate];
+  if (!d) return;
+
+  // HVAC Cooling
+  const tonsMid = Math.round(sqft / d.sfPerTon.mid / cf.cool);
+  const tonsLow = Math.round(sqft / d.sfPerTon.high / cf.cool);
+  const tonsHigh = Math.round(sqft / d.sfPerTon.low / cf.cool);
+
+  // HVAC Heating
+  const heatingMBH = Math.round(sqft * d.heatingBTUSF.mid * cf.heat / 1000);
+
+  // Electrical
+  const totalKW = Math.round(sqft * d.wPerSF.mid / 1000);
+  const ampsAt480 = Math.round(totalKW * 1000 / (480 * 1.732));
+  // Round up to standard service sizes
+  const serviceSizes = [200,400,600,800,1000,1200,1600,2000,2500,3000,4000];
+  const serviceSize = serviceSizes.find(s => s >= ampsAt480) || ampsAt480;
+
+  // Generator
+  const genKW = Math.round(totalKW * d.genPct.mid);
+  const genSizes = [30,50,75,100,125,150,200,250,300,350,400,500,600,750,1000,1250,1500,2000];
+  const genSize = genSizes.find(s => s >= genKW) || genKW;
+
+  // Plumbing
+  const fixtureCount = Math.round(sqft / 1000 * d.fixturePer1000SF);
+  const gpm = Math.round(fixtureCount * 2.5); // rough: 2.5 GPM per fixture
+  const hotWaterGal = Math.round(fixtureCount * 8); // rough: 8 gal storage per fixture
+
+  // Fire Protection
+  const fpHeads = Math.round(sqft / d.fpSFPerHead);
+  const needsFirePump = height > 55 || waterPSI < 40;
+  const fpSystem = climate === 'cold' ? 'Wet (heated areas) / Dry (unheated, parking)' : 'Wet pipe';
+
+  // Space
+  const mechRoom = Math.round(sqft * d.mechRoomPct);
+  const elecRoom = Math.round(sqft * d.elecRoomPct);
+  const shaftTotal = Math.round(d.shaftSFPerFloor * stories);
+
+  const res = document.getElementById('resultsGrid');
+  res.innerHTML = `
+    <div class="r-card">
+      <h3>HVAC — Cooling</h3>
+      <div class="r-highlight">${tonsMid} tons</div>
+      <div class="r-sub">Range: ${tonsLow} – ${tonsHigh} tons</div>
+      <div class="r-line"><span>Rule of thumb</span><span class="r-val">${d.sfPerTon.mid} SF/ton</span></div>
+      <div class="r-line"><span>Climate adjustment</span><span class="r-val">${cf.cool !== 1.0 ? cf.cool.toFixed(2) + 'x (' + cf.label + ')' : 'None (temperate)'}</span></div>
+      <div class="r-line"><span>BTU/hr (mid)</span><span class="r-val">${(tonsMid * 12000).toLocaleString()}</span></div>
+      <div class="system-rec">${d.systemRec}</div>
+    </div>
+
+    <div class="r-card">
+      <h3>HVAC — Heating</h3>
+      <div class="r-highlight">${heatingMBH.toLocaleString()} MBH</div>
+      <div class="r-sub">${(heatingMBH * 1000).toLocaleString()} BTU/hr</div>
+      <div class="r-line"><span>Rule of thumb</span><span class="r-val">${d.heatingBTUSF.mid} BTU/SF</span></div>
+      <div class="r-line"><span>Climate adjustment</span><span class="r-val">${cf.heat !== 1.0 ? cf.heat.toFixed(2) + 'x' : 'None'}</span></div>
+      <div class="r-line"><span>Boiler input (80% eff.)</span><span class="r-val">${Math.round(heatingMBH / 0.80).toLocaleString()} MBH</span></div>
+    </div>
+
+    <div class="r-card">
+      <h3>Electrical Service</h3>
+      <div class="r-highlight">${serviceSize}A @ 480/277V</div>
+      <div class="r-sub">${totalKW.toLocaleString()} kW total demand</div>
+      <div class="r-line"><span>Load density</span><span class="r-val">${d.wPerSF.mid} W/SF</span></div>
+      <div class="r-line"><span>Calculated amps</span><span class="r-val">${ampsAt480}A (3-phase 480V)</span></div>
+      <div class="r-line"><span>Standard service</span><span class="r-val">${serviceSize}A</span></div>
+      <div class="r-line"><span>Range</span><span class="r-val">${d.wPerSF.low}–${d.wPerSF.high} W/SF</span></div>
+    </div>
+
+    <div class="r-card">
+      <h3>Emergency Generator</h3>
+      <div class="r-highlight">${genSize} kW</div>
+      <div class="r-sub">${Math.round(d.genPct.mid * 100)}% of total electrical load</div>
+      <div class="r-line"><span>Calculated need</span><span class="r-val">${genKW} kW</span></div>
+      <div class="r-line"><span>Standard size</span><span class="r-val">${genSize} kW</span></div>
+      <div class="r-line"><span>Load on gen. range</span><span class="r-val">${Math.round(d.genPct.low*100)}–${Math.round(d.genPct.high*100)}%</span></div>
+      <div class="r-line"><span>Fuel</span><span class="r-val">Diesel (typical) or natural gas</span></div>
+    </div>
+
+    <div class="r-card">
+      <h3>Plumbing</h3>
+      <div class="r-highlight">${gpm} GPM</div>
+      <div class="r-sub">Estimated peak domestic water demand</div>
+      <div class="r-line"><span>Fixture count (est.)</span><span class="r-val">${fixtureCount}</span></div>
+      <div class="r-line"><span>Fixtures per 1000 SF</span><span class="r-val">${d.fixturePer1000SF}</span></div>
+      <div class="r-line"><span>Hot water storage</span><span class="r-val">${hotWaterGal.toLocaleString()} gal</span></div>
+      <div class="r-line"><span>City water pressure</span><span class="r-val">${waterPSI} PSI</span></div>
+    </div>
+
+    <div class="r-card">
+      <h3>Fire Protection</h3>
+      <div class="r-highlight">${fpHeads.toLocaleString()} heads</div>
+      <div class="r-sub">${fpSystem}</div>
+      <div class="r-line"><span>Hazard classification</span><span class="r-val">${d.fpHazard === 'light' ? 'Light Hazard' : 'Ordinary Hazard Group 1'}</span></div>
+      <div class="r-line"><span>Coverage per head</span><span class="r-val">${d.fpSFPerHead} SF/head (NFPA 13)</span></div>
+      <div class="r-line"><span>Fire pump</span><span class="r-val">${needsFirePump ? 'Likely required (height ' + height + '\' / pressure ' + waterPSI + ' PSI)' : 'Likely not required'}</span></div>
+      <div class="r-line"><span>Standpipe</span><span class="r-val">${height > 30 ? 'Required (building > 30\')' : 'Verify with AHJ'}</span></div>
+    </div>
+
+    <div class="r-card" style="grid-column:1/-1">
+      <h3>Space Requirements</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px">
+        <div>
+          <div class="r-highlight">${mechRoom.toLocaleString()} SF</div>
+          <div class="r-sub">Main Mechanical Room</div>
+          <div style="font-size:12px;color:#777">${(d.mechRoomPct*100).toFixed(1)}% of building SF</div>
+        </div>
+        <div>
+          <div class="r-highlight">${elecRoom.toLocaleString()} SF</div>
+          <div class="r-sub">Main Electrical Room</div>
+          <div style="font-size:12px;color:#777">${(d.elecRoomPct*100).toFixed(1)}% of building SF &middot; <a href="electrical-room.html" style="color:#2563eb">Size with NEC calculator &rarr;</a></div>
+        </div>
+        <div>
+          <div class="r-highlight">${shaftTotal} SF</div>
+          <div class="r-sub">Vertical Shafts (total)</div>
+          <div style="font-size:12px;color:#777">${d.shaftSFPerFloor} SF/floor &times; ${stories} stories</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Rules reference table
+  document.getElementById('rulesPanel').innerHTML = `
+    <h2>Rules of Thumb Reference (by Building Type)</h2>
+    <table class="rule-table">
+      <thead><tr><th>Building Type</th><th>SF/ton (Cooling)</th><th>W/SF (Electrical)</th><th>Generator %</th><th>Mech Room %</th></tr></thead>
+      <tbody>
+        ${Object.keys(SIZING_DATA).map(k => {
+          const s = SIZING_DATA[k];
+          const isActive = k === typeKey;
+          return `<tr${isActive ? ' class="active"' : ''}><td>${s.label}</td><td>${s.sfPerTon.low}–${s.sfPerTon.high}</td><td>${s.wPerSF.low}–${s.wPerSF.high}</td><td>${Math.round(s.genPct.low*100)}–${Math.round(s.genPct.high*100)}%</td><td>${(s.mechRoomPct*100).toFixed(1)}%</td></tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:#777;margin-top:8px">Sources: ASHRAE Handbook of Fundamentals (Ch. 18), ASHRAE Applications Handbook (Ch. 9, 17, 22), NEC Article 220, NFPA 13. Industry estimates — verify for your project.</p>
+  `;
+}
+
+function exportCSV() {
+  const typeKey = document.getElementById('buildingType').value;
+  const d = SIZING_DATA[typeKey];
+  const sqft = parseInt(document.getElementById('sqft').value) || 85000;
+  let csv = 'System,Value,Unit,Rule of Thumb,Source\n';
+
+  const results = document.querySelectorAll('.r-card');
+  results.forEach(card => {
+    const title = card.querySelector('h3');
+    const highlight = card.querySelector('.r-highlight');
+    if (title && highlight) {
+      csv += `"${title.textContent}","${highlight.textContent}","","","ASHRAE / NEC / NFPA"\n`;
+    }
+  });
+
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'MEP_System_Sizing.csv';
+  a.click();
+}
+
+// --- V2: Project state integration ---
+function initDropdowns() {
+  if (typeof MEPCalc !== 'undefined') {
+    MEPCalc.populateBuildingTypes(document.getElementById('buildingType'), 'senior-living');
+    if (MEPCalc.hasProject()) {
+      const p = MEPCalc.getProject();
+      if (p.buildingType) document.getElementById('buildingType').value = p.buildingType;
+      if (p.sqft) document.getElementById('sqft').value = p.sqft;
+    }
+  } else {
+    const sel = document.getElementById('buildingType');
+    Object.keys(SIZING_DATA).forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k; opt.textContent = SIZING_DATA[k].label;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+initDropdowns();
+recalc();
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof MEPCalc === 'undefined') return;
+  const el = document.querySelector('.methodology');
+  if (el) {
+    MEPCalc.renderContinueButtons(el, [
+      {tool: 'plenum-space', label: 'Plenum Feasibility'},
+      {tool: 'electrical-room', label: 'Electrical Room Sizing'},
+      {tool: 'rom-estimator', label: 'ROM Estimator'},
+    ]);
+  }
+});
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #eee;padding:12px 16px;font-size:12px;color:#777;text-align:center;z-index:9999;">This site uses cookies for ads. <a href="https://thehivemakes.com/privacy.html" style="color:#2563eb">Privacy Policy</a>. <button onclick="document.getElementById('cookie-banner').style.display='none';localStorage.setItem('cookie-ok','1');" style="margin-left:12px;padding:4px 14px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Got it</button></div>
+<script>if(!localStorage.getItem("cookie-ok"))document.getElementById("cookie-banner").style.display="block";</script>
+</body>
+</html>

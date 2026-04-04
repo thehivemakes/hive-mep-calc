@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEPCalc — Free MEP & Preconstruction Tools</title>
+<meta name="description" content="Free, no-signup MEP and preconstruction calculators for commercial construction. Scope gap matrix, general conditions, electrical room sizing, plenum space feasibility, ROM estimating, healthcare cost adders, and system sizing.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.5}
+.container{max-width:900px;margin:0 auto;padding:16px}
+header{background:#fff;border-bottom:2px solid #1a1a1a;padding:24px 0}
+.logo{font-size:28px;font-weight:700;letter-spacing:-0.5px;color:#1a1a1a}
+.logo span{color:#2563eb}
+.tagline{font-size:15px;color:#555;margin-top:4px}
+.project-start{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:24px 0}
+.project-start h2{font-size:16px;font-weight:700;margin-bottom:12px}
+.ps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:12px}
+.ps-grid label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px}
+.ps-grid input,.ps-grid select{padding:8px 10px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;width:100%}
+.ps-grid input:focus,.ps-grid select:focus{outline:none;border-color:#2563eb}
+.btn{padding:10px 20px;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-primary{background:#1a1a1a;color:#fff}
+.btn-primary:hover{background:#333}
+.section-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#999;margin:32px 0 16px}
+.tools-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.tool-card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px 20px;text-decoration:none;color:#1a1a1a;transition:all 0.15s;display:block}
+.tool-card:hover{border-color:#2563eb;box-shadow:0 2px 8px rgba(37,99,235,0.1);transform:translateY(-1px)}
+.tool-card h3{font-size:16px;font-weight:700;margin-bottom:4px;letter-spacing:-0.3px}
+.tool-card p{font-size:13px;color:#555;margin-bottom:8px}
+.tool-tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.tag-mep{background:#e0f2fe;color:#0369a1}
+.tag-precon{background:#f0fdf4;color:#166534}
+.tag-nec{background:#fef3c7;color:#92400e}
+.tag-new{background:#1a1a1a;color:#fff}
+.tag-healthcare{background:#fce7f3;color:#9d174d}
+.workflow{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:24px 0;font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:12px;color:#555;line-height:1.8;white-space:pre;overflow-x:auto}
+.divider{height:1px;background:#ddd;margin:32px 0}
+.about{font-size:14px;color:#555;max-width:600px}
+.about p{margin-bottom:12px}
+footer{text-align:center;padding:32px 16px;font-size:13px;color:#777;border-top:1px solid #eee;margin-top:48px}
+footer a{color:#555;text-decoration:none}
+footer a:hover{color:#1a1a1a}
+@media(max-width:600px){.ps-grid{grid-template-columns:1fr}#reqGrid{grid-template-columns:1fr !important}}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8335376690790226" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<div class="logo">MEP<span>Calc</span></div>
+<div class="tagline">Free tools for MEP and preconstruction professionals. No signup. No paywall.</div>
+</div>
+</header>
+
+<div class="container">
+
+<div class="project-start">
+<h2>Start a Project</h2>
+<p style="font-size:13px;color:#555;margin-bottom:12px">Enter project info once — it carries across all tools. Or skip this and use any tool standalone.</p>
+<div class="ps-grid">
+<div>
+<label>Project Name</label>
+<input type="text" id="ps-name" placeholder="e.g., Sunrise Phase 2">
+</div>
+<div>
+<label>Building Type</label>
+<select id="ps-type"></select>
+</div>
+<div>
+<label>Gross Square Footage</label>
+<input type="number" id="ps-sqft" placeholder="e.g., 85000">
+</div>
+<div>
+<label>Location</label>
+<select id="ps-location"></select>
+</div>
+</div>
+<button class="btn btn-primary" onclick="startProject()">Start Estimating &rarr;</button>
+</div>
+
+<div class="section-label">All Tools</div>
+
+<div class="tools-grid">
+
+<a href="rom-estimator.html" class="tool-card">
+<h3>MEP ROM Estimator</h3>
+<p>Rough Order of Magnitude MEP cost by building type, square footage, location, and quality tier. Broken down by Mechanical, Electrical, Plumbing, and Fire Protection. All assumptions visible and overridable.</p>
+<div class="tool-tags">
+<span class="tag tag-precon">Preconstruction</span>
+<span class="tag tag-mep">Cost Estimating</span>
+</div>
+</a>
+
+<a href="general-conditions.html" class="tool-card">
+<h3>General Conditions Calculator</h3>
+<p>Structured walkthrough of 35 line items with editable defaults. Staffing, temporary facilities, insurance, bonds, permits, and closeout. Stop rebuilding the spreadsheet from scratch.</p>
+<div class="tool-tags">
+<span class="tag tag-precon">Preconstruction</span>
+<span class="tag tag-mep">Division 01</span>
+</div>
+</a>
+
+<a href="scope-gap-matrix.html" class="tool-card">
+<h3>Scope Gap & Responsibility Matrix</h3>
+<p>76 common scope gap items across 6 trade interfaces. Assign responsibility, compare sub bids with Bid Leveling mode, export CSV, share via link. Prevent the change orders that cost 5-15% of contract value.</p>
+<div class="tool-tags">
+<span class="tag tag-mep">MEP Coordination</span>
+<span class="tag tag-precon">Preconstruction</span>
+<span class="tag tag-new">Bid Leveling</span>
+</div>
+</a>
+
+<a href="electrical-room.html" class="tool-card">
+<h3>Electrical Room Sizing (NEC 110.26)</h3>
+<p>Input your electrical equipment list. Get minimum room dimensions with NEC 110.26 working clearance, dedicated space, headroom, and egress requirements. 2023 NEC compliant.</p>
+<div class="tool-tags">
+<span class="tag tag-nec">NEC Code</span>
+<span class="tag tag-mep">Electrical</span>
+</div>
+</a>
+
+<a href="plenum-space.html" class="tool-card">
+<h3>Above-Ceiling Plenum Space Feasibility</h3>
+<p>Input floor-to-floor height and structural depth. Visual stacking diagram shows what fits in the plenum. Building type presets for healthcare, lab, and office. Critical for renovation projects.</p>
+<div class="tool-tags">
+<span class="tag tag-mep">MEP Coordination</span>
+<span class="tag tag-precon">Feasibility</span>
+</div>
+</a>
+
+<a href="healthcare-adder.html" class="tool-card">
+<h3>Healthcare / Senior Living MEP Cost Adder</h3>
+<p>Start from base commercial MEP cost, add line-item premiums: medical gas, ASHRAE 170 ventilation, nurse call, redundant power, isolation rooms. Quantifies the healthcare MEP premium.</p>
+<div class="tool-tags">
+<span class="tag tag-healthcare">Healthcare</span>
+<span class="tag tag-precon">Cost Estimating</span>
+<span class="tag tag-new">New</span>
+</div>
+</a>
+
+<a href="system-sizing.html" class="tool-card">
+<h3>MEP System Rough Sizing</h3>
+<p>Estimate HVAC tonnage, electrical service size, generator capacity, plumbing demand, fire protection, and mechanical room sizing. Rules of thumb by building type with climate adjustment. The first question on every pursuit.</p>
+<div class="tool-tags">
+<span class="tag tag-mep">MEP Engineering</span>
+<span class="tag tag-precon">Feasibility</span>
+<span class="tag tag-new">New</span>
+</div>
+</a>
+
+</div>
+
+<div class="workflow">
+  Preconstruction Workflow (optional — each tool works standalone)
+
+  ROM Estimator ───→ General Conditions ───→ Scope Gap Matrix
+        │                                          │
+        ├───→ Healthcare Adder                     └───→ Bid Leveling
+        │
+        └───→ Plenum Space ←── Electrical Room Sizing</div>
+
+<div class="divider"></div>
+
+<div class="about">
+<p><strong>Why these tools exist.</strong> Every preconstruction team does this math. Most do it in spreadsheets rebuilt from scratch on every pursuit, in enterprise software that costs more than the answer is worth, or from tribal knowledge that walks out the door when people leave.</p>
+<p>These tools are free because the knowledge behind them should be free. Every calculation shows its work. Every assumption is visible and overridable. Every number is defensible.</p>
+<p>Built for the people who estimate, coordinate, and build MEP systems on real projects — senior living, education, healthcare, commercial. The tools work on your phone, load fast, and don't require an account.</p>
+</div>
+
+<div class="about" style="margin-top:20px;">
+<p><strong>About the Builder.</strong> These tools were designed by The Architect of The Hive — a systems architect and builder working at the intersection of AI, construction technology, and the skilled trades. University of Delaware alum.</p>
+<p>The Hive builds free tools for people who build things. <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank" style="color:#2563eb">LinkedIn &rarr;</a></p>
+</div>
+
+<div class="divider"></div>
+
+<div id="request-tool" style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-bottom:24px">
+<h2 style="font-size:16px;font-weight:700;margin-bottom:4px">Need a Custom Tool?</h2>
+<p style="font-size:13px;color:#555;margin-bottom:16px">Tell us what you're building or estimating. If the tool doesn't exist yet, we'll consider building it — free. Leave your contact info and we'll follow up.</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" id="reqGrid">
+<div>
+<label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px">Your Name</label>
+<input type="text" id="req-name" placeholder="e.g., Sarah Chen">
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px">Email</label>
+<input type="email" id="req-email" placeholder="you@company.com">
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px">Company <span style="color:#999;font-weight:400">(optional)</span></label>
+<input type="text" id="req-company" placeholder="e.g., Turner Construction">
+</div>
+<div>
+<label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px">Role <span style="color:#999;font-weight:400">(optional)</span></label>
+<input type="text" id="req-role" placeholder="e.g., Sr. Estimator">
+</div>
+</div>
+<div style="margin-bottom:12px">
+<label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px">What Tool Do You Need?</label>
+<textarea id="req-desc" rows="3" style="padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;width:100%;font-family:inherit;resize:vertical" placeholder="Describe the calculator, estimator, or reference tool you wish existed. What inputs? What outputs? What problem does it solve on your projects?"></textarea>
+</div>
+<button class="btn btn-primary" id="req-submit" onclick="submitRequest()">Submit Request</button>
+<span id="req-status" style="margin-left:12px;font-size:13px;color:#555"></span>
+</div>
+
+</div>
+
+<footer>
+<p>Built by <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank">The Architect of The Hive</a> · <a href="https://thehivemakes.com" target="_blank">thehivemakes.com</a> · <a href="https://thehivemakes.com/privacy.html" style="color:#999;font-size:11px;">Privacy</a> · <a href="https://thehivemakes.com/terms.html" style="color:#999;font-size:11px;">Terms</a> · <a href="https://thehivemakes.com/disclosures.html" style="color:#999;font-size:11px;">Disclosures</a></p>
+<p style="margin-top:8px">MEPCalc is free and open. No accounts. No ads. No tracking.</p>
+</footer>
+
+<script src="mepcalc-core.js"></script>
+<script>
+MEPCalc.populateBuildingTypes(document.getElementById('ps-type'), 'office');
+MEPCalc.populateLocations(document.getElementById('ps-location'), '1.07');
+
+// Pre-fill if project exists
+const p = MEPCalc.getProject();
+if (p.name) document.getElementById('ps-name').value = p.name;
+if (p.buildingType) document.getElementById('ps-type').value = p.buildingType;
+if (p.sqft) document.getElementById('ps-sqft').value = p.sqft;
+if (p.location) document.getElementById('ps-location').value = p.location;
+
+// --- Tool Request Form ---
+// Replace this URL with your deployed Google Apps Script web app URL
+const GSHEET_WEBHOOK = '';  // e.g., 'https://script.google.com/macros/s/AKfyc.../exec'
+
+function submitRequest() {
+  const name = (document.getElementById('req-name').value || '').trim();
+  const email = (document.getElementById('req-email').value || '').trim();
+  const company = (document.getElementById('req-company').value || '').trim();
+  const role = (document.getElementById('req-role').value || '').trim();
+  const desc = (document.getElementById('req-desc').value || '').trim();
+  const status = document.getElementById('req-status');
+  const btn = document.getElementById('req-submit');
+
+  if (!name || !email || !desc) {
+    status.textContent = 'Please fill in your name, email, and tool description.';
+    status.style.color = '#c0392b';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    status.textContent = 'Please enter a valid email address.';
+    status.style.color = '#c0392b';
+    return;
+  }
+
+  const payload = {
+    name: name,
+    email: email,
+    company: company,
+    role: role,
+    description: desc,
+    timestamp: new Date().toISOString(),
+    source: 'MEPCalc',
+  };
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  status.textContent = '';
+
+  // Save to localStorage as backup
+  try {
+    const existing = JSON.parse(localStorage.getItem('mepcalc_requests') || '[]');
+    existing.push(payload);
+    localStorage.setItem('mepcalc_requests', JSON.stringify(existing));
+  } catch(e) {}
+
+  if (!GSHEET_WEBHOOK) {
+    // No webhook configured — save locally only
+    btn.textContent = 'Submit Request';
+    btn.disabled = false;
+    status.textContent = 'Request saved! We\'ll review it soon.';
+    status.style.color = '#27ae60';
+    clearRequestForm();
+    return;
+  }
+
+  fetch(GSHEET_WEBHOOK, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload),
+  })
+  .then(function() {
+    btn.textContent = 'Submit Request';
+    btn.disabled = false;
+    status.textContent = 'Request submitted! We\'ll review it and follow up.';
+    status.style.color = '#27ae60';
+    clearRequestForm();
+  })
+  .catch(function() {
+    btn.textContent = 'Submit Request';
+    btn.disabled = false;
+    status.textContent = 'Saved locally. We\'ll pick it up.';
+    status.style.color = '#e67e22';
+  });
+}
+
+function clearRequestForm() {
+  ['req-name','req-email','req-company','req-role','req-desc'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+}
+
+function startProject() {
+  const name = document.getElementById('ps-name').value.trim();
+  const type = document.getElementById('ps-type').value;
+  const sqft = parseInt(document.getElementById('ps-sqft').value) || null;
+  const loc = document.getElementById('ps-location').value;
+  const locLabel = MEPCalc.getLocationLabel(loc);
+
+  MEPCalc.saveProject({
+    name: name,
+    buildingType: type,
+    sqft: sqft,
+    location: loc,
+    locationLabel: locLabel,
+    date: new Date().toLocaleDateString('en-US'),
+  });
+
+  window.location.href = 'rom-estimator.html';
+}
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #eee;padding:12px 16px;font-size:12px;color:#777;text-align:center;z-index:9999;">This site uses cookies for ads. <a href="https://thehivemakes.com/privacy.html" style="color:#2563eb">Privacy Policy</a>. <button onclick="document.getElementById('cookie-banner').style.display='none';localStorage.setItem('cookie-ok','1');" style="margin-left:12px;padding:4px 14px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Got it</button></div>
+<script>if(!localStorage.getItem("cookie-ok"))document.getElementById("cookie-banner").style.display="block";</script>
+</body>
+</html>

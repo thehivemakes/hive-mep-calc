@@ -1,0 +1,28 @@
+{
+  "checks": [
+    {
+      "timestamp": "2026-04-02T10:50:43.558177",
+      "alert_count": 12,
+      "mode": "manual"
+    }
+  ],
+  "alerts": [
+    {
+      "timestamp": "2026-04-02T10:50:43.558186",
+      "alerts": [
+        "[KEYWORD] NEC (NFPA 70): Found '2029' on https://www.nfpa.org/codes-and-standards/nfpa-70-standard-development/70 \u2014 context: \"...ed\":{\"value\":false}}},\"nextEditionYear\":{\"value\":\"2029\"},\"currentEditionYear\":{\"value\":\"2026\"},\"nextEdit...\"",
+        "[KEYWORD] NFPA 13 (Sprinklers): Found '2028' on https://www.nfpa.org/codes-and-standards/nfpa-13-standard-development/13 \u2014 context: \"...ed\":{\"value\":false}}},\"nextEditionYear\":{\"value\":\"2028\"},\"currentEditionYear\":{\"value\":\"2025\"},\"nextEdit...\"",
+        "[UPCOMING] NFPA 99 (Healthcare Facilities): Next edition expected in 2027 (current: 2024). Plan review of: healthcare-adder.html",
+        "[KEYWORD] NFPA 99 (Healthcare Facilities): Found '2027' on https://www.nfpa.org/codes-and-standards/nfpa-99-standard-development/99 \u2014 context: \"...ed\":{\"value\":false}}},\"nextEditionYear\":{\"value\":\"2027\"},\"currentEditionYear\":{\"value\":\"2024\"},\"nextEdit...\"",
+        "[KEYWORD] NFPA 110 (Emergency Power): Found '2028' on https://www.nfpa.org/codes-and-standards/nfpa-110-standard-development/110 \u2014 context: \"...ed\":{\"value\":false}}},\"nextEditionYear\":{\"value\":\"2028\"},\"currentEditionYear\":{\"value\":\"2025\"},\"nextEdit...\"",
+        "[TIME] ASHRAE 90.1 (Energy): Next edition was expected in 2025. MEPCalc was built against 2022 edition. Check if a new edition has been published and review affected tools: system-sizing.html",
+        "[KEYWORD] ASHRAE 90.1 (Energy): Found '90.1-2025' on https://www.ashrae.org/technical-resources/standards-and-guidelines/read-only-versions-of-ashrae-standards \u2014 context: \"...thr-link-aids=\"68f9174d87965d56b87c60f0\">Standard 90.1-2025, Energy Standard for Buildings Except Low-Rise Re...\"",
+        "[KEYWORD] ASHRAE 170 (Healthcare Ventilation): Found '170-2025' on https://www.ashrae.org/technical-resources/standards-and-guidelines/read-only-versions-of-ashrae-standards \u2014 context: \"...thr-link-aids=\"68f9174d87965d56b87c60f0\">Standard 170-2025, Ventilation of Health Care Facilities</a></p> <p...\"",
+        "[ADOPTION] Delaware: Still recorded as NEC 2020 (6 years behind current). Check if the state has adopted a newer edition.",
+        "[ADOPTION] New Jersey: Still recorded as NEC 2020 (6 years behind current). Check if the state has adopted a newer edition.",
+        "[ADOPTION] Connecticut: Still recorded as NEC 2020 (6 years behind current). Check if the state has adopted a newer edition.",
+        "[ADOPTION] Pennsylvania: Still recorded as NEC 2017 (9 years behind current). Check if the state has adopted a newer edition."
+      ]
+    }
+  ]
+}

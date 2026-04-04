@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Above-Ceiling Plenum Space Feasibility Calculator | MEPCalc</title>
+<meta name="description" content="Free above-ceiling plenum space feasibility calculator. Input floor-to-floor height and structural depth, see what MEP systems fit in the available plenum space.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.5}
+.container{max-width:1000px;margin:0 auto;padding:16px}
+header{background:#fff;border-bottom:2px solid #1a1a1a;padding:16px 0}
+header .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.logo{font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#1a1a1a;text-decoration:none}
+.logo span{color:#2563eb}
+nav a{color:#555;text-decoration:none;font-size:14px;margin-left:16px}
+nav a:hover{color:#1a1a1a}
+h1{font-size:24px;font-weight:700;margin:24px 0 8px;letter-spacing:-0.5px}
+.subtitle{color:#555;font-size:15px;margin-bottom:24px}
+label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px}
+input,select{padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;width:100%}
+input:focus,select:focus{outline:none;border-color:#2563eb}
+.btn{padding:8px 16px;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary{background:#1a1a1a;color:#fff}
+.btn-primary:hover{background:#333}
+.panel{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px}
+.panel h2{font-size:16px;font-weight:700;margin-bottom:12px}
+.input-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.verdict-bar{padding:20px;border-radius:6px;margin-bottom:20px;text-align:center}
+.verdict-bar.comfortable{background:#dcfce7;border:2px solid #16a34a}
+.verdict-bar.tight{background:#fef3c7;border:2px solid #f59e0b}
+.verdict-bar.not-feasible{background:#fee2e2;border:2px solid #dc2626}
+.verdict-text{font-size:28px;font-weight:700}
+.verdict-detail{font-size:15px;margin-top:4px;color:#555}
+.verdict-bar.comfortable .verdict-text{color:#166534}
+.verdict-bar.tight .verdict-text{color:#92400e}
+.verdict-bar.not-feasible .verdict-text{color:#991b1b}
+.stack-visual{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-bottom:20px;overflow-x:auto}
+.stack-diagram{position:relative;width:100%;max-width:500px;margin:0 auto}
+.stack-layer{display:flex;align-items:center;border:1px solid #ccc;font-size:12px;font-weight:600;overflow:hidden;position:relative}
+.stack-layer .layer-label{padding:4px 8px;white-space:nowrap;position:relative;z-index:1}
+.stack-layer .layer-dim{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#555;z-index:1}
+.stack-layer.struct{background:#d4d4d8}
+.stack-layer.ceiling-grid{background:#a3a3a3}
+.stack-layer.duct{background:#93c5fd}
+.stack-layer.pipe{background:#86efac}
+.stack-layer.conduit{background:#fde68a}
+.stack-layer.sprinkler{background:#fca5a5}
+.stack-layer.light{background:#c4b5fd}
+.stack-layer.insul{background:#fed7aa}
+.stack-layer.gap{background:#f0fdf4;border-style:dashed;border-color:#16a34a}
+.stack-layer.overage{background:#fef2f2;border-style:dashed;border-color:#dc2626}
+.stack-layer.floor{background:#78716c;color:#fff}
+.stack-layer.ceiling-line{background:#e5e5e5;border:2px dashed #555}
+.mep-item{display:grid;grid-template-columns:1fr 80px 80px 50px;gap:8px;padding:8px 0;border-bottom:1px solid #eee;align-items:center;font-size:14px}
+.mep-item:last-child{border-bottom:none}
+.mep-header{display:grid;grid-template-columns:1fr 80px 80px 50px;gap:8px;padding:4px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;border-bottom:1px solid #ddd}
+.mep-item input[type="number"]{padding:6px 8px;font-size:13px;text-align:right}
+.mep-item input[type="checkbox"]{width:auto}
+.suggestions{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px}
+.suggestions h3{font-size:14px;font-weight:700;margin-bottom:8px}
+.suggestions ul{padding-left:20px;font-size:14px;color:#444}
+.suggestions li{margin-bottom:6px}
+.methodology{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-top:24px;font-size:14px}
+.methodology h2{font-size:18px;margin-bottom:12px}
+.methodology p,.methodology li{color:#444;margin-bottom:8px}
+.methodology ul{padding-left:20px}
+footer{text-align:center;padding:24px;font-size:13px;color:#777;border-top:1px solid #eee;margin-top:32px}
+footer a{color:#555;text-decoration:none}
+@media(max-width:768px){
+  .mep-item,.mep-header{grid-template-columns:1fr 60px 60px 40px;gap:4px}
+  .input-grid{grid-template-columns:1fr}
+}
+@media print{header,.btn,footer,nav{display:none!important}}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8335376690790226" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<a href="index.html" class="logo">MEP<span>Calc</span></a>
+<nav>
+<a href="index.html">All Tools</a>
+<a href="scope-gap-matrix.html">Scope Gap Matrix</a>
+<a href="electrical-room.html">Elec. Room Sizing</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<h1>Above-Ceiling Plenum Space Feasibility Calculator</h1>
+<p class="subtitle">Input floor-to-floor height and structural depth. See available plenum space and whether your MEP systems fit — with a visual stacking diagram.</p>
+
+<div class="panel">
+<h2>Building Dimensions</h2>
+<div class="input-grid">
+<div>
+<label>Floor-to-Floor Height (inches)</label>
+<input type="number" id="f2f" value="156" min="96" step="1" onchange="recalc()">
+<div style="font-size:11px;color:#777;margin-top:2px">13'-0" = 156" | 12'-0" = 144" | 14'-0" = 168"</div>
+</div>
+<div>
+<label>Structural Depth (inches)</label>
+<input type="number" id="structDepth" value="18" min="4" step="1" onchange="recalc()">
+<div style="font-size:11px;color:#777;margin-top:2px">Bar joist: 12-24" | W-beam: 12-36" | Concrete slab: 8-12"</div>
+</div>
+<div>
+<label>Finished Ceiling Height (inches)</label>
+<input type="number" id="ceilingHt" value="108" min="84" step="1" onchange="recalc()">
+<div style="font-size:11px;color:#777;margin-top:2px">9'-0" = 108" | 8'-6" = 102" | 10'-0" = 120"</div>
+</div>
+<div>
+<label>Floor Assembly (inches)</label>
+<input type="number" id="floorAssembly" value="6" min="0" step="0.5" onchange="recalc()">
+<div style="font-size:11px;color:#777;margin-top:2px">Concrete on deck: 4-6" | Raised floor: 12-18"</div>
+</div>
+<div>
+<label>Fire-Rated Ceiling Assembly (inches)</label>
+<input type="number" id="fireRated" value="0" min="0" step="0.5" onchange="recalc()">
+<div style="font-size:11px;color:#777;margin-top:2px">0 if none | 1-hr: ~1.5" | 2-hr: ~2.5"</div>
+</div>
+<div>
+<label>Ceiling Grid/T-bar (inches)</label>
+<input type="number" id="ceilingGrid" value="1.5" min="0" step="0.5" onchange="recalc()">
+</div>
+</div>
+</div>
+
+<div class="panel">
+<h2>MEP Systems in Plenum</h2>
+<p style="font-size:13px;color:#555;margin-bottom:12px">Check systems present in this project. Adjust depths for your specific equipment. Stacking assumes worst-case zone (corridor or main distribution area) where multiple systems cross.</p>
+<div class="mep-header">
+<div>System</div>
+<div>Depth (in)</div>
+<div>+ Insul.</div>
+<div>Include</div>
+</div>
+<div id="mepList"></div>
+</div>
+
+<div id="verdictBar" class="verdict-bar comfortable"></div>
+<div class="stack-visual" id="stackVisual"></div>
+<div class="suggestions" id="suggestionsPanel" style="display:none"></div>
+
+<div class="methodology">
+<h2>How This Works</h2>
+<p>Above-ceiling plenum space is one of the most constrained areas in commercial construction, especially in healthcare and senior living renovations. This calculator determines whether your MEP systems can physically fit between the structural system above and the finished ceiling below.</p>
+<p><strong>Available plenum</strong> = Floor-to-floor height - Floor assembly - Structural depth - Finished ceiling height - Ceiling grid - Fire-rated assembly</p>
+<p><strong>Required plenum</strong> = Sum of all MEP system depths (with insulation), stacked at worst-case crossing point</p>
+<p><strong>Key assumptions:</strong></p>
+<ul>
+<li>Systems are stacked vertically at the worst-case crossing zone (where the most systems overlap)</li>
+<li>In practice, systems are routed at different elevations and only cross at specific points — actual conflicts may be less severe than worst-case</li>
+<li>Main distribution (corridor) typically stacks more systems than individual rooms</li>
+<li>Insulation thickness is added to the duct/pipe depth where checked</li>
+</ul>
+<p><strong>Typical rules of thumb:</strong></p>
+<ul>
+<li>Office buildings: 24-36" plenum typically sufficient</li>
+<li>Healthcare: 36-48" plenum often needed (higher air change rates = larger ducts)</li>
+<li>Labs/research: 48-60" plenum for fume hood exhaust and high air volumes</li>
+<li>Senior living: 30-42" plenum — verify above-ceiling access for maintenance</li>
+</ul>
+<p><strong>When it doesn't fit:</strong> The tool suggests alternatives including flat-oval ductwork, higher-velocity design (smaller ducts, more fan energy), routing large mains in corridors only, and active chilled beam systems that eliminate large ductwork.</p>
+</div>
+</div>
+
+<footer>
+<p>Built by <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank">The Architect of The Hive</a> · <a href="https://thehivemakes.com" target="_blank">thehivemakes.com</a> · <a href="https://thehivemakes.com/privacy.html" style="color:#999;font-size:11px;">Privacy</a> · <a href="https://thehivemakes.com/terms.html" style="color:#999;font-size:11px;">Terms</a> · <a href="https://thehivemakes.com/disclosures.html" style="color:#999;font-size:11px;">Disclosures</a> &middot; Free tools for people who build things &middot; <a href="index.html">MEPCalc</a></p>
+</footer>
+
+<script src="mepcalc-core.js"></script>
+<script>
+const MEP_SYSTEMS = [
+  {id:'main-duct',  name:'Main Supply/Return Ductwork', depth:24, insul:2,  on:true, color:'#93c5fd', cat:'duct'},
+  {id:'branch-duct',name:'Branch Ductwork',             depth:12, insul:1,  on:true, color:'#bfdbfe', cat:'duct'},
+  {id:'exhaust',    name:'Exhaust Ductwork',            depth:12, insul:0,  on:false,color:'#dbeafe', cat:'duct'},
+  {id:'sprinkler-m',name:'Sprinkler Mains',             depth:6,  insul:0,  on:true, color:'#fca5a5', cat:'sprinkler'},
+  {id:'sprinkler-b',name:'Sprinkler Branch Lines',      depth:3,  insul:0,  on:true, color:'#fecaca', cat:'sprinkler'},
+  {id:'dom-water',  name:'Domestic Water Piping',       depth:4,  insul:1,  on:true, color:'#86efac', cat:'pipe'},
+  {id:'waste-vent', name:'Waste/Vent Piping',           depth:6,  insul:0,  on:true, color:'#bbf7d0', cat:'pipe'},
+  {id:'med-gas',    name:'Medical Gas Piping',          depth:3,  insul:0,  on:false,color:'#a7f3d0', cat:'pipe'},
+  {id:'chw-pipe',   name:'Chilled/Hot Water Piping',    depth:5,  insul:1.5,on:false,color:'#6ee7b7', cat:'pipe'},
+  {id:'conduit',    name:'Conduit / Cable Tray',        depth:8,  insul:0,  on:true, color:'#fde68a', cat:'conduit'},
+  {id:'lights',     name:'Recessed Light Fixtures',     depth:10, insul:0,  on:true, color:'#c4b5fd', cat:'light'},
+];
+
+let systems = JSON.parse(JSON.stringify(MEP_SYSTEMS));
+
+function renderMEPList() {
+  const list = document.getElementById('mepList');
+  list.innerHTML = systems.map((s, i) => `
+    <div class="mep-item">
+      <div style="font-size:13px">${s.name}</div>
+      <input type="number" value="${s.depth}" min="0" step="0.5" onchange="systems[${i}].depth=+this.value;recalc()">
+      <input type="number" value="${s.insul}" min="0" step="0.5" onchange="systems[${i}].insul=+this.value;recalc()">
+      <input type="checkbox" ${s.on?'checked':''} onchange="systems[${i}].on=this.checked;recalc()">
+    </div>
+  `).join('');
+}
+
+function recalc() {
+  const f2f = parseFloat(document.getElementById('f2f').value) || 156;
+  const struct = parseFloat(document.getElementById('structDepth').value) || 18;
+  const ceil = parseFloat(document.getElementById('ceilingHt').value) || 108;
+  const floor = parseFloat(document.getElementById('floorAssembly').value) || 6;
+  const fireRated = parseFloat(document.getElementById('fireRated').value) || 0;
+  const grid = parseFloat(document.getElementById('ceilingGrid').value) || 1.5;
+
+  const available = f2f - floor - struct - ceil - grid - fireRated;
+
+  let required = 0;
+  const activeSystems = systems.filter(s => s.on);
+  activeSystems.forEach(s => { required += s.depth + s.insul; });
+
+  const remaining = available - required;
+  const pctUsed = available > 0 ? (required / available * 100) : 999;
+
+  // Verdict
+  const vBar = document.getElementById('verdictBar');
+  let verdict, vClass;
+  if (remaining >= 4) {
+    verdict = 'Comfortable';
+    vClass = 'comfortable';
+  } else if (remaining >= 0) {
+    verdict = 'Tight — Feasible with Careful Coordination';
+    vClass = 'tight';
+  } else {
+    verdict = 'Not Feasible — ' + Math.abs(remaining).toFixed(1) + '" Over';
+    vClass = 'not-feasible';
+  }
+
+  vBar.className = 'verdict-bar ' + vClass;
+  vBar.innerHTML = `
+    <div class="verdict-text">${verdict}</div>
+    <div class="verdict-detail">Available plenum: ${available.toFixed(1)}" (${(available/12).toFixed(1)}') &mdash; Required: ${required.toFixed(1)}" &mdash; Remaining: ${remaining.toFixed(1)}"</div>
+  `;
+
+  // Stack diagram
+  const sv = document.getElementById('stackVisual');
+  const maxPx = 400;
+  const totalStack = struct + available + grid + fireRated;
+  const scale = totalStack > 0 ? maxPx / totalStack : 1;
+
+  let layers = [];
+  layers.push({label:'Structure (above)', h: struct, cls:'struct'});
+
+  activeSystems.forEach(s => {
+    const totalH = s.depth + s.insul;
+    let lbl = s.name;
+    if (s.insul > 0) lbl += ' + ' + s.insul + '" insul';
+    layers.push({label: lbl, h: totalH, cls: s.cat});
+  });
+
+  if (remaining > 0) {
+    layers.push({label: 'Remaining space', h: remaining, cls: 'gap'});
+  } else if (remaining < 0) {
+    layers.push({label: 'OVERAGE: ' + Math.abs(remaining).toFixed(1) + '"', h: Math.abs(remaining), cls: 'overage'});
+  }
+
+  if (fireRated > 0) {
+    layers.push({label: 'Fire-rated assembly', h: fireRated, cls: 'ceiling-grid'});
+  }
+  layers.push({label: 'Ceiling grid/T-bar', h: grid, cls: 'ceiling-grid'});
+
+  const diagram = document.createElement('div');
+  diagram.className = 'stack-diagram';
+  diagram.innerHTML = '<div style="font-size:11px;font-weight:600;text-align:center;margin-bottom:8px;color:#555">PLENUM CROSS-SECTION (worst-case stacking)</div>';
+
+  layers.forEach(l => {
+    const px = Math.max(l.h * scale, 16);
+    const colorMap = {struct:'#d4d4d8',duct:'#93c5fd',pipe:'#86efac',sprinkler:'#fca5a5',conduit:'#fde68a',light:'#c4b5fd',insul:'#fed7aa','ceiling-grid':'#a3a3a3',gap:'#dcfce7',overage:'#fecaca'};
+    const bg = colorMap[l.cls] || '#e5e5e5';
+    const borderStyle = (l.cls === 'gap' || l.cls === 'overage') ? 'dashed' : 'solid';
+    diagram.innerHTML += `<div class="stack-layer" style="height:${px}px;background:${bg};border-style:${borderStyle}">
+      <span class="layer-label">${l.label}</span>
+      <span class="layer-dim">${l.h.toFixed(1)}"</span>
+    </div>`;
+  });
+
+  diagram.innerHTML += '<div style="font-size:11px;text-align:center;margin-top:4px;color:#555">&#8595; Finished Ceiling at ' + (ceil/12).toFixed(1) + '\' AFF</div>';
+
+  sv.innerHTML = '';
+  sv.appendChild(diagram);
+
+  // Suggestions if tight or not feasible
+  const sp = document.getElementById('suggestionsPanel');
+  if (remaining < 4) {
+    sp.style.display = 'block';
+    let tips = [];
+    if (activeSystems.some(s => s.id === 'main-duct' && s.depth >= 16)) {
+      tips.push('Use flat-oval ductwork for mains — reduces height by 30-40% vs rectangular for same airflow capacity');
+      tips.push('Increase duct velocity from 1000 FPM to 1500 FPM — smaller duct cross-section, but higher fan energy and noise. Verify acoustic requirements.');
+    }
+    tips.push('Route large mains (supply, return, exhaust) in corridors only — use smaller branch ducts in rooms');
+    if (activeSystems.some(s => s.id === 'chw-pipe')) {
+      tips.push('Consider active chilled beams — eliminates large supply ductwork, uses smaller ventilation-only ducts + piped chilled water');
+    }
+    tips.push('Coordinate crossing points — not all systems need to stack at every location. Zone the plenum into layers.');
+    if (remaining < 0) {
+      tips.push('Increase floor-to-floor height if design phase allows — cheapest solution when structural steel hasn\'t been ordered');
+      tips.push('Lower the finished ceiling height if program allows — verify ADA and code minimums (typically 7\'-6" to 8\'-0" minimum)');
+      tips.push('Consider exposed ceiling (no ACT) — eliminates grid depth and allows MEP to weave between structure');
+    }
+    sp.innerHTML = `<h3>${remaining < 0 ? 'Recommendations to Achieve Feasibility' : 'Recommendations to Reduce Risk'}</h3><ul>${tips.map(t => '<li>' + t + '</li>').join('')}</ul>`;
+  } else {
+    sp.style.display = 'none';
+  }
+}
+
+// --- V2: Building type presets ---
+const BUILDING_PRESETS = {
+  'senior-living': {enable: ['med-gas','chw-pipe','exhaust'], mainDuct: 24},
+  'hospital':      {enable: ['med-gas','chw-pipe','exhaust'], mainDuct: 28},
+  'outpatient':    {enable: ['med-gas','chw-pipe','exhaust'], mainDuct: 24},
+  'higher-ed':     {enable: ['exhaust','chw-pipe'], mainDuct: 30},
+  'k12':           {enable: ['exhaust'], mainDuct: 20},
+  'office':        {enable: [], mainDuct: 24},
+  'industrial':    {enable: [], mainDuct: 20, disable: ['branch-duct','med-gas','chw-pipe']},
+  'retail':        {enable: [], mainDuct: 18},
+  'multifamily':   {enable: [], mainDuct: 18},
+};
+
+function applyBuildingPreset(typeKey) {
+  const preset = BUILDING_PRESETS[typeKey];
+  if (!preset) return;
+  systems.forEach(function(s) {
+    if (preset.enable && preset.enable.includes(s.id)) s.on = true;
+    if (preset.disable && preset.disable.includes(s.id)) s.on = false;
+    if (s.id === 'main-duct' && preset.mainDuct) s.depth = preset.mainDuct;
+  });
+}
+
+// Apply preset from project state
+if (typeof MEPCalc !== 'undefined' && MEPCalc.hasProject()) {
+  const p = MEPCalc.getProject();
+  if (p.buildingType) applyBuildingPreset(p.buildingType);
+}
+
+renderMEPList();
+recalc();
+
+// Continue-to buttons
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof MEPCalc === 'undefined') return;
+  const el = document.querySelector('.methodology');
+  if (el) {
+    MEPCalc.renderContinueButtons(el, [
+      {tool: 'electrical-room', label: 'Electrical Room Sizing'},
+      {tool: 'scope-gap-matrix', label: 'Scope Gap Matrix'},
+    ]);
+  }
+});
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #eee;padding:12px 16px;font-size:12px;color:#777;text-align:center;z-index:9999;">This site uses cookies for ads. <a href="https://thehivemakes.com/privacy.html" style="color:#2563eb">Privacy Policy</a>. <button onclick="document.getElementById('cookie-banner').style.display='none';localStorage.setItem('cookie-ok','1');" style="margin-left:12px;padding:4px 14px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Got it</button></div>
+<script>if(!localStorage.getItem("cookie-ok"))document.getElementById("cookie-banner").style.display="block";</script>
+</body>
+</html>

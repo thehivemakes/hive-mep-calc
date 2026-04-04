@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>General Conditions Calculator | MEPCalc</title>
+<meta name="description" content="Free general conditions cost calculator for commercial construction. Walk through actual line items with editable defaults for staffing, temporary facilities, insurance, and more.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.5}
+.container{max-width:1000px;margin:0 auto;padding:16px}
+header{background:#fff;border-bottom:2px solid #1a1a1a;padding:16px 0}
+header .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.logo{font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#1a1a1a;text-decoration:none}
+.logo span{color:#2563eb}
+nav a{color:#555;text-decoration:none;font-size:14px;margin-left:16px}
+nav a:hover{color:#1a1a1a}
+h1{font-size:24px;font-weight:700;margin:24px 0 8px;letter-spacing:-0.5px}
+.subtitle{color:#555;font-size:15px;margin-bottom:24px}
+.project-bar{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px}
+input,select{padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;width:100%}
+input:focus,select:focus{outline:none;border-color:#2563eb}
+.summary-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.summary-card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px}
+.summary-card.total{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.summary-card.total .s-label{color:#aaa}
+.s-value{font-size:24px;font-weight:700}
+.s-label{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.5px}
+.category{margin-bottom:20px}
+.cat-header{background:#fff;border:1px solid #ddd;border-radius:6px 6px 0 0;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.cat-header:hover{background:#f9f9f9}
+.cat-title{font-weight:700;font-size:15px}
+.cat-total{font-weight:700;font-size:15px;color:#2563eb}
+.cat-body{background:#fff;border:1px solid #ddd;border-top:none;border-radius:0 0 6px 6px}
+.line-item{display:grid;grid-template-columns:1fr 100px 100px 60px 110px;gap:8px;padding:8px 16px;border-bottom:1px solid #eee;align-items:center;font-size:14px}
+.line-item:last-child{border-bottom:none}
+.line-item:nth-child(even){background:#fafafa}
+.line-item input{padding:6px 8px;font-size:13px;text-align:right}
+.line-item-total{font-weight:600;text-align:right;font-size:13px;white-space:nowrap}
+.line-header{display:grid;grid-template-columns:1fr 100px 100px 60px 110px;gap:8px;padding:8px 16px;border-bottom:1px solid #ddd;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555}
+.line-desc{font-size:13px}
+.line-note{font-size:11px;color:#777}
+.btn{padding:8px 16px;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary{background:#1a1a1a;color:#fff}
+.btn-primary:hover{background:#333}
+.btn-secondary{background:#fff;color:#1a1a1a;border:1px solid #ccc}
+.btn-secondary:hover{background:#f5f5f5}
+.export-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.methodology{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-top:24px;font-size:14px}
+.methodology h2{font-size:18px;margin-bottom:12px}
+.methodology p,.methodology li{color:#444;margin-bottom:8px}
+.methodology ul{padding-left:20px}
+footer{text-align:center;padding:24px;font-size:13px;color:#777;border-top:1px solid #eee;margin-top:32px}
+footer a{color:#555;text-decoration:none}
+footer a:hover{color:#1a1a1a}
+.cat-body.collapsed{display:none}
+.toggle-icon{font-size:12px;transition:transform 0.2s}
+.toggle-icon.collapsed{transform:rotate(-90deg)}
+@media(max-width:768px){
+  .line-item{grid-template-columns:1fr;gap:4px}
+  .line-header{display:none}
+  .line-item input{text-align:left}
+}
+@media print{
+  header,.export-row,.btn,footer,nav{display:none!important}
+  .cat-body.collapsed{display:block!important}
+}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8335376690790226" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<a href="index.html" class="logo">MEP<span>Calc</span></a>
+<nav>
+<a href="index.html">All Tools</a>
+<a href="scope-gap-matrix.html">Scope Gap Matrix</a>
+<a href="electrical-room.html">Elec. Room Sizing</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<h1>General Conditions Calculator</h1>
+<p class="subtitle">Walk through actual general conditions line items for a construction project. All defaults are editable — override with your rates and quantities.</p>
+
+<div class="project-bar">
+<div><label>Project Name</label><input type="text" id="projName" placeholder="Project name"></div>
+<div><label>Total Construction Cost ($)</label><input type="number" id="projCost" value="10000000" onchange="recalcAll()"></div>
+<div><label>Duration (months)</label><input type="number" id="projDuration" value="14" min="1" max="60" onchange="recalcAll()"></div>
+<div><label>Location</label>
+<select id="projLocation" onchange="recalcAll()"></select>
+</div>
+</div>
+
+<div class="summary-bar" id="summaryBar"></div>
+
+<div class="export-row">
+<button class="btn btn-secondary" onclick="expandAllCats()">Expand All</button>
+<button class="btn btn-secondary" onclick="collapseAllCats()">Collapse All</button>
+<div style="flex:1"></div>
+<button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+<button class="btn btn-primary" onclick="window.print()">Print / PDF</button>
+</div>
+
+<div id="categoriesContainer"></div>
+
+<div class="methodology">
+<h2>How This Works</h2>
+<p>General conditions (also called "General Requirements" or Division 01 costs) represent the overhead of running a construction project — staffing, temporary facilities, insurance, and project-level expenses that aren't tied to a specific trade.</p>
+<p>Typical general conditions range from <strong>8-15% of total construction cost</strong>, varying by project size, duration, complexity, and location. Larger projects tend toward lower percentages; complex healthcare or renovation projects trend higher.</p>
+<p><strong>How to use:</strong></p>
+<ul>
+<li>Enter your project cost, duration, and location</li>
+<li>Review each line item — defaults are Mid-Atlantic market estimates for a $10M commercial project</li>
+<li>Override any value by clicking and typing your actual rate or quantity</li>
+<li>Monthly items auto-multiply by project duration</li>
+<li>The summary bar updates in real-time as you adjust</li>
+</ul>
+<p><strong>Default rates:</strong> Based on 2025-2026 Mid-Atlantic market conditions for commercial construction. Salary ranges reflect fully-burdened costs (salary + benefits + burden). Adjust for your local market using the location factor, or override individual rates.</p>
+<p><strong>Note:</strong> This calculator provides a structured framework — not a quote. Every project has unique general conditions requirements. Use this as a starting point and adjust based on project-specific scope, contract terms, and local conditions.</p>
+</div>
+</div>
+
+<footer>
+<p>Built by <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank">The Architect of The Hive</a> · <a href="https://thehivemakes.com" target="_blank">thehivemakes.com</a> · <a href="https://thehivemakes.com/privacy.html" style="color:#999;font-size:11px;">Privacy</a> · <a href="https://thehivemakes.com/terms.html" style="color:#999;font-size:11px;">Terms</a> · <a href="https://thehivemakes.com/disclosures.html" style="color:#999;font-size:11px;">Disclosures</a> &middot; Free tools for people who build things &middot; <a href="index.html">MEPCalc</a></p>
+</footer>
+
+<script src="mepcalc-core.js"></script>
+<script>
+const CATEGORIES = [
+{
+  title: 'Project Staffing',
+  items: [
+    {desc:'Project Manager',unit:'mo',rate:18500,qty:'duration',note:'Fully burdened monthly cost'},
+    {desc:'Superintendent',unit:'mo',rate:16000,qty:'duration',note:'Fully burdened monthly cost'},
+    {desc:'Assistant Superintendent',unit:'mo',rate:12500,qty:'duration',note:'If project warrants — typically > $15M'},
+    {desc:'Project Engineer',unit:'mo',rate:11000,qty:'duration',note:'Fully burdened monthly cost'},
+    {desc:'Safety Manager',unit:'mo',rate:4000,qty:'duration',note:'Allocation — shared across projects'},
+    {desc:'Project Coordinator / Admin',unit:'mo',rate:6500,qty:'duration',note:'If project warrants'},
+  ]
+},
+{
+  title: 'Temporary Facilities',
+  items: [
+    {desc:'Job trailer / field office rental',unit:'mo',rate:1800,qty:'duration',note:'Includes setup and removal'},
+    {desc:'Trailer furniture and equipment',unit:'LS',rate:3500,qty:1,note:'Desks, chairs, plan tables'},
+    {desc:'Temporary power (utility connection + distribution)',unit:'mo',rate:1200,qty:'duration',note:'Transformer, panels, temp wiring'},
+    {desc:'Temporary water',unit:'mo',rate:400,qty:'duration',note:'Meter and distribution'},
+    {desc:'Temporary fencing / barricades',unit:'LS',rate:8000,qty:1,note:'Perimeter security fencing'},
+    {desc:'Portable sanitation (toilets)',unit:'mo',rate:600,qty:'duration',note:'2-4 units typical'},
+    {desc:'Dumpsters / waste removal',unit:'mo',rate:2500,qty:'duration',note:'Regular haul schedule'},
+    {desc:'Site signage (project ID, safety, wayfinding)',unit:'LS',rate:3000,qty:1,note:''},
+    {desc:'Temporary stairs / ladders / access',unit:'LS',rate:5000,qty:1,note:''},
+  ]
+},
+{
+  title: 'Site Operations',
+  items: [
+    {desc:'Site security (guard service or monitoring)',unit:'mo',rate:3500,qty:'duration',note:'After hours — camera or guard'},
+    {desc:'Temporary heat during construction',unit:'mo',rate:2800,qty:4,note:'Heating months only — adjust quantity'},
+    {desc:'Snow / ice removal',unit:'mo',rate:1500,qty:4,note:'Winter months — adjust quantity'},
+    {desc:'Dust control / water truck',unit:'mo',rate:800,qty:'duration',note:'Site-dependent'},
+    {desc:'Traffic control / flagging',unit:'LS',rate:4000,qty:1,note:'If adjacent to roadway'},
+  ]
+},
+{
+  title: 'Insurance & Bonds',
+  items: [
+    {desc:"Builder's risk insurance",unit:'% of cost',rate:0,qty:0,note:'Typically 0.5-1.5% of construction cost',pct:0.008},
+    {desc:'General liability insurance',unit:'% of cost',rate:0,qty:0,note:'Typically 1.0-2.0% of construction cost',pct:0.015},
+    {desc:'Performance & payment bond',unit:'% of cost',rate:0,qty:0,note:'Typically 1.0-3.0% if required',pct:0},
+    {desc:'Umbrella / excess liability',unit:'% of cost',rate:0,qty:0,note:'Varies by project requirements',pct:0.003},
+  ]
+},
+{
+  title: 'Permits, Fees & Professional Services',
+  items: [
+    {desc:'Building permit fees',unit:'% of cost',rate:0,qty:0,note:'Typically 0.5-2.0% — varies by jurisdiction',pct:0.01},
+    {desc:'Plan review fees',unit:'LS',rate:5000,qty:1,note:''},
+    {desc:'Third-party testing and inspections',unit:'LS',rate:25000,qty:1,note:'Concrete, steel, soils, fireproofing'},
+    {desc:'Survey / layout',unit:'LS',rate:8000,qty:1,note:'Building layout and control'},
+    {desc:'As-built documentation',unit:'LS',rate:5000,qty:1,note:'Closeout requirement'},
+    {desc:'Project photography / drone',unit:'mo',rate:500,qty:'duration',note:'Monthly progress documentation'},
+  ]
+},
+{
+  title: 'IT & Communications',
+  items: [
+    {desc:'Internet / WiFi for job site',unit:'mo',rate:350,qty:'duration',note:''},
+    {desc:'Project management software',unit:'mo',rate:500,qty:'duration',note:'Procore, PlanGrid, etc.'},
+    {desc:'Printing / plotting',unit:'mo',rate:400,qty:'duration',note:'Drawings, submittals, RFIs'},
+    {desc:'Mobile devices / radios',unit:'LS',rate:2000,qty:1,note:''},
+  ]
+},
+{
+  title: 'Project Closeout',
+  items: [
+    {desc:'Final cleaning',unit:'SF',rate:0.35,qty:0,note:'Typically $0.25-0.50/SF — enter SF below',sf:true},
+    {desc:'Punch list labor',unit:'LS',rate:15000,qty:1,note:'GC self-perform punch list completion'},
+    {desc:'Commissioning support (GC labor)',unit:'LS',rate:8000,qty:1,note:'GC coordination for Cx activities'},
+    {desc:'Warranty period costs',unit:'LS',rate:5000,qty:1,note:'12-month callback allowance'},
+    {desc:'Mobilization / demobilization',unit:'LS',rate:15000,qty:1,note:'Equipment move-in and move-out'},
+    {desc:'Small tools and consumables',unit:'LS',rate:10000,qty:1,note:'Saw blades, drill bits, fasteners, etc.'},
+  ]
+}
+];
+
+let state = {};
+
+function init() {
+  const container = document.getElementById('categoriesContainer');
+  container.innerHTML = '';
+
+  CATEGORIES.forEach((cat, ci) => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category';
+
+    let itemsHTML = `<div class="line-header"><div>Description</div><div>Rate</div><div>Qty / Unit</div><div>Unit</div><div>Line Total</div></div>`;
+
+    cat.items.forEach((item, ii) => {
+      const key = ci + '-' + ii;
+      const dur = getDuration();
+      let qty = item.qty === 'duration' ? dur : item.qty;
+      let rate = item.rate;
+
+      if (item.pct !== undefined) {
+        rate = item.pct;
+        qty = 1;
+      }
+      if (item.sf) {
+        qty = Math.round(getProjectCost() / 250);
+      }
+
+      state[key] = {rate, qty, pct: item.pct, sf: item.sf, isDuration: item.qty === 'duration'};
+
+      itemsHTML += `
+        <div class="line-item">
+          <div>
+            <div class="line-desc">${item.desc}</div>
+            ${item.note ? '<div class="line-note">' + item.note + '</div>' : ''}
+          </div>
+          <input type="number" step="any" value="${item.pct !== undefined ? (item.pct * 100).toFixed(1) : rate}" id="rate-${key}" onchange="updateLine('${key}')">
+          <input type="number" step="any" value="${item.pct !== undefined ? '' : qty}" id="qty-${key}" onchange="updateLine('${key}')" ${item.pct !== undefined ? 'placeholder="auto" disabled' : ''}>
+          <div style="font-size:12px;color:#777">${item.pct !== undefined ? '%' : item.unit}</div>
+          <div class="line-item-total" id="total-${key}">$0</div>
+        </div>
+      `;
+    });
+
+    catDiv.innerHTML = `
+      <div class="cat-header" onclick="toggleCat(${ci})">
+        <div>
+          <span class="cat-title">${cat.title}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="cat-total" id="catTotal-${ci}">$0</span>
+          <span class="toggle-icon" id="catIcon-${ci}">&#9660;</span>
+        </div>
+      </div>
+      <div class="cat-body" id="catBody-${ci}">${itemsHTML}</div>
+    `;
+    container.appendChild(catDiv);
+  });
+
+  recalcAll();
+}
+
+function getDuration() { return parseInt(document.getElementById('projDuration').value) || 14; }
+function getProjectCost() { return parseFloat(document.getElementById('projCost').value) || 10000000; }
+function getLocationFactor() { return parseFloat(document.getElementById('projLocation').value) || 1.0; }
+
+function updateLine(key) {
+  const s = state[key];
+  const rateInput = document.getElementById('rate-' + key);
+  const qtyInput = document.getElementById('qty-' + key);
+
+  if (s.pct !== undefined) {
+    s.pct = parseFloat(rateInput.value) / 100 || 0;
+  } else {
+    s.rate = parseFloat(rateInput.value) || 0;
+    s.qty = parseFloat(qtyInput.value) || 0;
+  }
+
+  recalcAll();
+}
+
+function recalcAll() {
+  const cost = getProjectCost();
+  const dur = getDuration();
+  const locFactor = getLocationFactor();
+  let grandTotal = 0;
+
+  CATEGORIES.forEach((cat, ci) => {
+    let catSum = 0;
+    cat.items.forEach((item, ii) => {
+      const key = ci + '-' + ii;
+      const s = state[key];
+      if (!s) return;
+
+      if (s.isDuration) {
+        const qtyInput = document.getElementById('qty-' + key);
+        if (qtyInput && !qtyInput.dataset.userEdited) {
+          s.qty = dur;
+          qtyInput.value = dur;
+        }
+      }
+      if (s.sf) {
+        const qtyInput = document.getElementById('qty-' + key);
+        if (qtyInput && !qtyInput.dataset.userEdited) {
+          s.qty = Math.round(cost / 250);
+          qtyInput.value = s.qty;
+        }
+      }
+
+      let lineTotal = 0;
+      if (s.pct !== undefined) {
+        lineTotal = cost * s.pct;
+      } else {
+        lineTotal = s.rate * s.qty * locFactor;
+      }
+
+      document.getElementById('total-' + key).textContent = '$' + Math.round(lineTotal).toLocaleString();
+      catSum += lineTotal;
+    });
+
+    document.getElementById('catTotal-' + ci).textContent = '$' + Math.round(catSum).toLocaleString();
+    grandTotal += catSum;
+  });
+
+  const pctOfCost = cost > 0 ? (grandTotal / cost * 100).toFixed(1) : '0.0';
+  const perMonth = dur > 0 ? Math.round(grandTotal / dur) : 0;
+
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="summary-card total"><div class="s-value">$${Math.round(grandTotal).toLocaleString()}</div><div class="s-label">Total General Conditions</div></div>
+    <div class="summary-card"><div class="s-value">${pctOfCost}%</div><div class="s-label">Of Construction Cost</div></div>
+    <div class="summary-card"><div class="s-value">$${perMonth.toLocaleString()}</div><div class="s-label">Per Month</div></div>
+    <div class="summary-card"><div class="s-value">${dur} mo</div><div class="s-label">Project Duration</div></div>
+  `;
+}
+
+function toggleCat(ci) {
+  document.getElementById('catBody-' + ci).classList.toggle('collapsed');
+  document.getElementById('catIcon-' + ci).classList.toggle('collapsed');
+}
+function expandAllCats() {
+  document.querySelectorAll('.cat-body').forEach(b => b.classList.remove('collapsed'));
+  document.querySelectorAll('.toggle-icon').forEach(i => i.classList.remove('collapsed'));
+}
+function collapseAllCats() {
+  document.querySelectorAll('.cat-body').forEach(b => b.classList.add('collapsed'));
+  document.querySelectorAll('.toggle-icon').forEach(i => i.classList.add('collapsed'));
+}
+
+function exportCSV() {
+  const projName = document.getElementById('projName').value || 'Project';
+  let csv = 'Category,Line Item,Rate,Quantity,Unit,Line Total\n';
+  CATEGORIES.forEach((cat, ci) => {
+    cat.items.forEach((item, ii) => {
+      const key = ci + '-' + ii;
+      const s = state[key];
+      const total = document.getElementById('total-' + key).textContent;
+      const rate = s.pct !== undefined ? (s.pct * 100).toFixed(1) + '%' : s.rate;
+      const qty = s.pct !== undefined ? 'of cost' : s.qty;
+      csv += `"${cat.title}","${item.desc}","${rate}","${qty}","${item.pct !== undefined ? '%' : item.unit}","${total}"\n`;
+    });
+  });
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = projName.replace(/[^a-z0-9]/gi, '_') + '_General_Conditions.csv';
+  a.click();
+}
+
+// Track user edits to qty fields so auto-update doesn't overwrite
+document.addEventListener('change', (e) => {
+  if (e.target.id && e.target.id.startsWith('qty-')) {
+    e.target.dataset.userEdited = 'true';
+  }
+});
+
+init();
+
+// --- V2: Project state integration ---
+if (typeof MEPCalc !== 'undefined') {
+  MEPCalc.populateLocations(document.getElementById('projLocation'), '1.07');
+  if (MEPCalc.hasProject()) {
+    const p = MEPCalc.getProject();
+    if (p.name) document.getElementById('projName').value = p.name;
+    if (p.totalCost) document.getElementById('projCost').value = p.totalCost;
+    if (p.duration) document.getElementById('projDuration').value = p.duration;
+    if (p.location) document.getElementById('projLocation').value = p.location;
+    recalcAll();
+  }
+} else {
+  // Fallback if core.js somehow missing
+  const sel = document.getElementById('projLocation');
+  [['1.00','National Average'],['1.07','Delaware / Wilmington'],['1.12','New Jersey / Northern'],['1.10','Pennsylvania / Philadelphia']].forEach(function(l) {
+    const o = document.createElement('option'); o.value = l[0]; o.textContent = l[1] + ' (' + l[0] + ')';
+    sel.appendChild(o);
+  });
+}
+
+// Continue-to buttons
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof MEPCalc === 'undefined') return;
+  const el = document.querySelector('.methodology');
+  if (el) {
+    MEPCalc.renderContinueButtons(el, [
+      {tool: 'scope-gap-matrix', label: 'Scope Gap Matrix'},
+      {tool: 'rom-estimator', label: 'ROM Estimator'},
+    ]);
+  }
+});
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #eee;padding:12px 16px;font-size:12px;color:#777;text-align:center;z-index:9999;">This site uses cookies for ads. <a href="https://thehivemakes.com/privacy.html" style="color:#2563eb">Privacy Policy</a>. <button onclick="document.getElementById('cookie-banner').style.display='none';localStorage.setItem('cookie-ok','1');" style="margin-left:12px;padding:4px 14px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Got it</button></div>
+<script>if(!localStorage.getItem("cookie-ok"))document.getElementById("cookie-banner").style.display="block";</script>
+</body>
+</html>

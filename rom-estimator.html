@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEP ROM Estimator — Rough Order of Magnitude | MEPCalc</title>
+<meta name="description" content="Free MEP rough order of magnitude cost estimator. Input building type, square footage, and location for MEP cost range broken down by Mechanical, Electrical, Plumbing, and Fire Protection.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.5}
+.container{max-width:1000px;margin:0 auto;padding:16px}
+header{background:#fff;border-bottom:2px solid #1a1a1a;padding:16px 0}
+header .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.logo{font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#1a1a1a;text-decoration:none}
+.logo span{color:#2563eb}
+nav a{color:#555;text-decoration:none;font-size:14px;margin-left:16px}
+nav a:hover{color:#1a1a1a}
+h1{font-size:24px;font-weight:700;margin:24px 0 8px;letter-spacing:-0.5px}
+.subtitle{color:#555;font-size:15px;margin-bottom:24px}
+label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555;display:block;margin-bottom:4px}
+input,select{padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;width:100%}
+input:focus,select:focus{outline:none;border-color:#2563eb}
+.btn{padding:8px 16px;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary{background:#1a1a1a;color:#fff}
+.btn-primary:hover{background:#333}
+.btn-secondary{background:#fff;color:#1a1a1a;border:1px solid #ccc}
+.btn-secondary:hover{background:#f5f5f5}
+.panel{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px}
+.panel h2{font-size:16px;font-weight:700;margin-bottom:12px}
+.input-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px}
+.r-card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px}
+.r-card.total{background:#1a1a1a;color:#fff;border-color:#1a1a1a;grid-column:1/-1}
+.r-card.total .r-sub{color:#aaa}
+.r-value{font-size:24px;font-weight:700}
+.r-label{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin-top:2px}
+.r-card.total .r-label{color:#aaa}
+.r-sub{font-size:13px;color:#555;margin-top:6px}
+.r-range{font-size:13px;color:#777;margin-top:4px}
+.breakdown-table{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0}
+.breakdown-table th,.breakdown-table td{padding:8px 12px;border:1px solid #ddd;text-align:right}
+.breakdown-table th{background:#f5f5f5;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase}
+.breakdown-table td:first-child{text-align:left;font-weight:500}
+.breakdown-table tr.total-row{background:#f0f4ff;font-weight:700}
+.bar-chart{margin:16px 0}
+.bar-row{display:flex;align-items:center;margin-bottom:6px}
+.bar-label{width:120px;font-size:13px;font-weight:500;flex-shrink:0}
+.bar-track{flex:1;background:#f0f0f0;border-radius:4px;height:24px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;min-width:fit-content}
+.bar-pct{width:50px;text-align:right;font-size:13px;font-weight:600;flex-shrink:0;margin-left:8px}
+.confidence{display:inline-block;padding:6px 12px;border-radius:4px;font-size:13px;font-weight:600;margin-top:8px}
+.conf-high{background:#dcfce7;color:#166534}
+.conf-med{background:#fef3c7;color:#92400e}
+.conf-low{background:#fee2e2;color:#991b1b}
+.assumptions{background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px;font-size:13px}
+.assumptions h3{font-size:14px;font-weight:700;margin-bottom:8px}
+.assumptions li{color:#555;margin-bottom:4px}
+.assumptions ul{padding-left:20px}
+.override-section{margin-top:16px;padding-top:16px;border-top:1px solid #ddd}
+.override-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:8px}
+.override-grid label{font-size:11px}
+.override-grid input{font-size:13px;padding:6px 8px}
+.methodology{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-top:24px;font-size:14px}
+.methodology h2{font-size:18px;margin-bottom:12px}
+.methodology p,.methodology li{color:#444;margin-bottom:8px}
+.methodology ul{padding-left:20px}
+footer{text-align:center;padding:24px;font-size:13px;color:#777;border-top:1px solid #eee;margin-top:32px}
+footer a{color:#555;text-decoration:none}
+@media(max-width:768px){.input-grid,.results-grid{grid-template-columns:1fr}.r-card.total{grid-column:auto}}
+@media print{header,.btn,footer,nav,.override-section{display:none!important}}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8335376690790226" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<a href="index.html" class="logo">MEP<span>Calc</span></a>
+<nav>
+<a href="index.html">All Tools</a>
+<a href="scope-gap-matrix.html">Scope Gap Matrix</a>
+<a href="general-conditions.html">Gen. Conditions</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<h1>MEP ROM Estimator</h1>
+<p class="subtitle">Rough Order of Magnitude MEP cost estimate by building type, square footage, location, and quality tier. All assumptions visible and overridable.</p>
+
+<div class="panel">
+<h2>Project Inputs</h2>
+<div class="input-grid">
+<div>
+<label>Building Type</label>
+<select id="buildingType" onchange="recalc()">
+<option value="senior-living">Senior Living / Assisted Living</option>
+<option value="hospital">Hospital / Acute Care</option>
+<option value="outpatient">Outpatient Clinic / MOB</option>
+<option value="k12">K-12 Education</option>
+<option value="higher-ed">Higher Education / Lab</option>
+<option value="office" selected>Commercial Office</option>
+<option value="industrial">Industrial / Warehouse</option>
+<option value="retail">Retail</option>
+<option value="multifamily">Multifamily Residential</option>
+</select>
+</div>
+<div>
+<label>Gross Square Footage</label>
+<input type="number" id="sqft" value="50000" min="1000" step="1000" onchange="recalc()">
+</div>
+<div>
+<label>Location</label>
+<select id="location" onchange="recalc()">
+<option value="1.00">National Average (1.00)</option>
+<option value="1.07" selected>Delaware / Wilmington (1.07)</option>
+<option value="1.12">New Jersey / Northern (1.12)</option>
+<option value="1.10">Pennsylvania / Philadelphia (1.10)</option>
+<option value="1.05">Connecticut (1.05)</option>
+<option value="1.18">New York City Metro (1.18)</option>
+<option value="1.15">Boston Metro (1.15)</option>
+<option value="1.08">Washington DC Metro (1.08)</option>
+<option value="0.92">Southeast (0.92)</option>
+<option value="0.97">Midwest (0.97)</option>
+<option value="1.13">West Coast (1.13)</option>
+</select>
+</div>
+<div>
+<label>Quality Tier</label>
+<select id="quality" onchange="recalc()">
+<option value="budget">Budget / Value</option>
+<option value="standard" selected>Standard</option>
+<option value="premium">Premium / High-Performance</option>
+</select>
+</div>
+</div>
+
+<div class="override-section">
+<h3 style="font-size:13px;font-weight:600;color:#555">Advanced: Override Trade Split (% of MEP total)</h3>
+<p style="font-size:12px;color:#777;margin-bottom:8px">Leave blank to use defaults for building type. Percentages should sum to 100%.</p>
+<div class="override-grid">
+<div><label>Mechanical %</label><input type="number" id="ovr-mech" placeholder="auto" min="0" max="100" step="1" onchange="recalc()"></div>
+<div><label>Electrical %</label><input type="number" id="ovr-elec" placeholder="auto" min="0" max="100" step="1" onchange="recalc()"></div>
+<div><label>Plumbing %</label><input type="number" id="ovr-plumb" placeholder="auto" min="0" max="100" step="1" onchange="recalc()"></div>
+<div><label>Fire Protection %</label><input type="number" id="ovr-fp" placeholder="auto" min="0" max="100" step="1" onchange="recalc()"></div>
+</div>
+</div>
+</div>
+
+<div class="results-grid" id="resultsGrid"></div>
+
+<div class="panel" id="breakdownPanel"></div>
+
+<div class="assumptions" id="assumptionsPanel"></div>
+
+<div class="methodology">
+<h2>How This Works</h2>
+<p>This tool provides a Rough Order of Magnitude (ROM) estimate for MEP systems based on building type benchmarks. ROM estimates are typically within -25% to +50% accuracy — they are for early feasibility and budgeting, not for bidding.</p>
+<p><strong>Methodology:</strong></p>
+<ul>
+<li><strong>Base cost:</strong> Total construction cost per SF is estimated by building type (national averages from published industry data). MEP percentage is then applied.</li>
+<li><strong>MEP percentage of total:</strong> Varies by building type — from ~12% for industrial to ~40% for hospitals. These are industry-standard ranges published by MEP industry associations and preconstruction benchmarks.</li>
+<li><strong>Trade split:</strong> The MEP total is split into Mechanical, Electrical, Plumbing, and Fire Protection based on typical ratios for each building type.</li>
+<li><strong>Location factor:</strong> Regional cost adjustment based on published city cost index data. National average = 1.00.</li>
+<li><strong>Quality tier:</strong> Budget multiplier 0.85, Standard 1.00, Premium 1.20. Reflects system quality, redundancy, and specification level.</li>
+</ul>
+<p><strong>Important caveats:</strong></p>
+<ul>
+<li>ROM estimates are not proposals or bids. Accuracy is conceptual (-25% to +50%)</li>
+<li>Site-specific conditions (soil, existing utilities, phasing, access) are not included</li>
+<li>Specialty systems (medical gas, lab exhaust, clean rooms) require separate analysis</li>
+<li>Default percentages are industry norms — override with your experience for better accuracy</li>
+<li>Location factors are approximate — verify with local contractors for current market conditions</li>
+</ul>
+<p><strong>Sources:</strong> MEP cost percentages derived from published industry benchmarks including RSMeans Building Construction Cost Data references, Wohlsen Construction MEP cost studies, ASHRAE Handbook cost data, and preconstruction industry consensus. Location factors based on published city cost indices. All defaults are editable — this tool shows its assumptions and lets you override them.</p>
+</div>
+</div>
+
+<footer>
+<p>Built by <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank">The Architect of The Hive</a> · <a href="https://thehivemakes.com" target="_blank">thehivemakes.com</a> · <a href="https://thehivemakes.com/privacy.html" style="color:#999;font-size:11px;">Privacy</a> · <a href="https://thehivemakes.com/terms.html" style="color:#999;font-size:11px;">Terms</a> · <a href="https://thehivemakes.com/disclosures.html" style="color:#999;font-size:11px;">Disclosures</a> &middot; Free tools for people who build things &middot; <a href="index.html">MEPCalc</a></p>
+</footer>
+
+<script src="mepcalc-core.js"></script>
+<script>
+// Building type data:
+// totalCostPerSF: base total construction cost/SF (national avg, standard quality)
+// mepPctLow/Mid/High: MEP as % of total construction
+// tradeSplit: {mech%, elec%, plumb%, fp%} — must sum to 100
+// confidence: how reliable the benchmark is
+const BUILDING_DATA = {
+  'senior-living': {
+    label: 'Senior Living / Assisted Living',
+    totalCostPerSF: 280,
+    mepPctLow: 25, mepPctMid: 30, mepPctHigh: 35,
+    tradeSplit: {mech: 42, elec: 30, plumb: 18, fp: 10},
+    confidence: 'medium',
+    notes: 'Includes nurse call allowance. Medical gas, if required, adds 1-3%. Higher plumbing density than office due to individual unit bathrooms.'
+  },
+  'hospital': {
+    label: 'Hospital / Acute Care',
+    totalCostPerSF: 550,
+    mepPctLow: 35, mepPctMid: 42, mepPctHigh: 50,
+    tradeSplit: {mech: 40, elec: 30, plumb: 17, fp: 13},
+    confidence: 'medium',
+    notes: 'Highest MEP intensity. Includes redundant systems, emergency power, medical gas infrastructure, isolation rooms, and code-required ventilation rates (ASHRAE 170). Wide range due to acuity level and redundancy requirements.'
+  },
+  'outpatient': {
+    label: 'Outpatient Clinic / Medical Office Building',
+    totalCostPerSF: 320,
+    mepPctLow: 22, mepPctMid: 27, mepPctHigh: 32,
+    tradeSplit: {mech: 40, elec: 32, plumb: 18, fp: 10},
+    confidence: 'medium',
+    notes: 'Between office and hospital. Depends heavily on procedure rooms, imaging suites, and exam room density.'
+  },
+  'k12': {
+    label: 'K-12 Education',
+    totalCostPerSF: 300,
+    mepPctLow: 20, mepPctMid: 23, mepPctHigh: 27,
+    tradeSplit: {mech: 44, elec: 30, plumb: 14, fp: 12},
+    confidence: 'high',
+    notes: 'Relatively standardized. Mechanical driven by classroom ventilation requirements. Higher fire protection in multi-story. Technology infrastructure increasing electrical share.'
+  },
+  'higher-ed': {
+    label: 'Higher Education / Laboratory',
+    totalCostPerSF: 450,
+    mepPctLow: 30, mepPctMid: 38, mepPctHigh: 45,
+    tradeSplit: {mech: 45, elec: 28, plumb: 15, fp: 12},
+    confidence: 'low',
+    notes: 'Wide range — standard classroom buildings at low end, research labs with fume hoods at high end. Lab exhaust and makeup air dominate mechanical costs. Verify lab vs classroom mix.'
+  },
+  'office': {
+    label: 'Commercial Office',
+    totalCostPerSF: 250,
+    mepPctLow: 18, mepPctMid: 21, mepPctHigh: 25,
+    tradeSplit: {mech: 40, elec: 35, plumb: 13, fp: 12},
+    confidence: 'high',
+    notes: 'Most benchmarked building type. Range assumes ground-up base building + standard TI. Core & shell only (no TI) trends toward the low end (15-18%). Fully fitted Class A office trends higher (25-30%). Data center or trading floor areas require separate analysis.'
+  },
+  'industrial': {
+    label: 'Industrial / Warehouse',
+    totalCostPerSF: 140,
+    mepPctLow: 8, mepPctMid: 12, mepPctHigh: 16,
+    tradeSplit: {mech: 30, elec: 40, plumb: 15, fp: 15},
+    confidence: 'high',
+    notes: 'Lowest MEP intensity. Electrical share higher due to power distribution, lighting. Process equipment connections are separate. Cold storage or food processing significantly increases mechanical.'
+  },
+  'retail': {
+    label: 'Retail',
+    totalCostPerSF: 180,
+    mepPctLow: 12, mepPctMid: 16, mepPctHigh: 20,
+    tradeSplit: {mech: 38, elec: 36, plumb: 12, fp: 14},
+    confidence: 'medium',
+    notes: 'Varies widely by tenant type. Restaurant/food service retail has much higher plumbing and exhaust. Big box vs boutique differ significantly.'
+  },
+  'multifamily': {
+    label: 'Multifamily Residential',
+    totalCostPerSF: 230,
+    mepPctLow: 18, mepPctMid: 22, mepPctHigh: 26,
+    tradeSplit: {mech: 38, elec: 28, plumb: 22, fp: 12},
+    confidence: 'medium',
+    notes: 'Higher plumbing share due to individual unit kitchens and bathrooms. Mechanical depends on system type — PTAC/PTHP vs central plant. High-rise adds fire pump and standpipe cost.'
+  }
+};
+
+const QUALITY_MULT = {budget: 0.85, standard: 1.0, premium: 1.20};
+const QUALITY_LABELS = {budget: 'Budget / Value', standard: 'Standard', premium: 'Premium / High-Performance'};
+
+function recalc() {
+  const typeKey = document.getElementById('buildingType').value;
+  const sqft = parseInt(document.getElementById('sqft').value) || 50000;
+  const locFactor = parseFloat(document.getElementById('location').value) || 1.0;
+  const qualKey = document.getElementById('quality').value;
+  const qualMult = QUALITY_MULT[qualKey];
+
+  const bldg = BUILDING_DATA[typeKey];
+
+  // Check for overrides
+  const ovrMech = document.getElementById('ovr-mech').value;
+  const ovrElec = document.getElementById('ovr-elec').value;
+  const ovrPlumb = document.getElementById('ovr-plumb').value;
+  const ovrFP = document.getElementById('ovr-fp').value;
+
+  let split;
+  if (ovrMech || ovrElec || ovrPlumb || ovrFP) {
+    split = {
+      mech: parseFloat(ovrMech) || bldg.tradeSplit.mech,
+      elec: parseFloat(ovrElec) || bldg.tradeSplit.elec,
+      plumb: parseFloat(ovrPlumb) || bldg.tradeSplit.plumb,
+      fp: parseFloat(ovrFP) || bldg.tradeSplit.fp,
+    };
+  } else {
+    split = {...bldg.tradeSplit};
+  }
+
+  // Normalize split to 100%
+  const splitTotal = split.mech + split.elec + split.plumb + split.fp;
+  split.mech = split.mech / splitTotal * 100;
+  split.elec = split.elec / splitTotal * 100;
+  split.plumb = split.plumb / splitTotal * 100;
+  split.fp = split.fp / splitTotal * 100;
+
+  // Calculate
+  const totalCostSF = bldg.totalCostPerSF * locFactor * qualMult;
+  const totalCost = totalCostSF * sqft;
+
+  const mepPctLow = bldg.mepPctLow / 100;
+  const mepPctMid = bldg.mepPctMid / 100;
+  const mepPctHigh = bldg.mepPctHigh / 100;
+
+  const mepLow = totalCost * mepPctLow;
+  const mepMid = totalCost * mepPctMid;
+  const mepHigh = totalCost * mepPctHigh;
+
+  const mepMidSF = mepMid / sqft;
+
+  // Trade breakdown (using mid estimate)
+  const trades = [
+    {name: 'Mechanical (HVAC)', pct: split.mech, cost: mepMid * split.mech / 100, color: '#3b82f6'},
+    {name: 'Electrical', pct: split.elec, cost: mepMid * split.elec / 100, color: '#f59e0b'},
+    {name: 'Plumbing', pct: split.plumb, cost: mepMid * split.plumb / 100, color: '#10b981'},
+    {name: 'Fire Protection', pct: split.fp, cost: mepMid * split.fp / 100, color: '#ef4444'},
+  ];
+
+  const confClass = {high:'conf-high',medium:'conf-med',low:'conf-low'}[bldg.confidence];
+  const confLabel = {high:'Higher Confidence',medium:'Moderate Confidence',low:'Lower Confidence — Wide Range'}[bldg.confidence];
+
+  // Results grid
+  document.getElementById('resultsGrid').innerHTML = `
+    <div class="r-card total">
+      <div class="r-value">$${fmt(mepMid)}</div>
+      <div class="r-label">Total MEP Estimate (Mid-Range)</div>
+      <div class="r-sub">Range: $${fmt(mepLow)} &mdash; $${fmt(mepHigh)}</div>
+      <div class="r-sub">$${mepMidSF.toFixed(2)}/SF &middot; ${bldg.mepPctMid}% of construction cost</div>
+      <div class="confidence ${confClass}" style="margin-top:12px">${confLabel}</div>
+    </div>
+    ${trades.map(t => `
+      <div class="r-card">
+        <div class="r-value" style="color:${t.color}">$${fmt(t.cost)}</div>
+        <div class="r-label">${t.name}</div>
+        <div class="r-range">${t.pct.toFixed(0)}% of MEP &middot; $${(t.cost/sqft).toFixed(2)}/SF</div>
+      </div>
+    `).join('')}
+  `;
+
+  // Breakdown table
+  document.getElementById('breakdownPanel').innerHTML = `
+    <h2>Detailed Breakdown</h2>
+    <table class="breakdown-table">
+      <thead>
+        <tr><th>Trade</th><th>% of MEP</th><th>$/SF</th><th>Low Estimate</th><th>Mid Estimate</th><th>High Estimate</th></tr>
+      </thead>
+      <tbody>
+        ${trades.map(t => {
+          const tLow = mepLow * t.pct / 100;
+          const tHigh = mepHigh * t.pct / 100;
+          return `<tr><td>${t.name}</td><td>${t.pct.toFixed(0)}%</td><td>$${(t.cost/sqft).toFixed(2)}</td><td>$${fmt(tLow)}</td><td>$${fmt(t.cost)}</td><td>$${fmt(tHigh)}</td></tr>`;
+        }).join('')}
+        <tr class="total-row"><td>Total MEP</td><td>100%</td><td>$${mepMidSF.toFixed(2)}</td><td>$${fmt(mepLow)}</td><td>$${fmt(mepMid)}</td><td>$${fmt(mepHigh)}</td></tr>
+      </tbody>
+    </table>
+
+    <div class="bar-chart">
+      ${trades.map(t => `
+        <div class="bar-row">
+          <div class="bar-label">${t.name.split(' (')[0]}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${t.pct}%;background:${t.color}">$${(t.cost/sqft).toFixed(2)}/SF</div></div>
+          <div class="bar-pct">${t.pct.toFixed(0)}%</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <table class="breakdown-table" style="margin-top:16px">
+      <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Total Construction Cost (est.)</td><td>$${fmt(totalCost)}</td></tr>
+        <tr><td>Construction Cost/SF</td><td>$${totalCostSF.toFixed(2)}/SF</td></tr>
+        <tr><td>MEP as % of Construction</td><td>${bldg.mepPctLow}% — ${bldg.mepPctHigh}% (mid: ${bldg.mepPctMid}%)</td></tr>
+        <tr><td>Location Factor</td><td>${locFactor.toFixed(2)}</td></tr>
+        <tr><td>Quality Tier</td><td>${QUALITY_LABELS[qualKey]} (&times;${qualMult.toFixed(2)})</td></tr>
+        <tr><td>ROM Accuracy Range</td><td>-25% to +50% (conceptual)</td></tr>
+      </tbody>
+    </table>
+  `;
+
+  // Assumptions
+  document.getElementById('assumptionsPanel').innerHTML = `
+    <h3>Assumptions & Notes for ${bldg.label}</h3>
+    <ul>
+      <li><strong>Base construction cost:</strong> $${bldg.totalCostPerSF}/SF national average (standard quality, 2025-2026)</li>
+      <li><strong>MEP percentage range:</strong> ${bldg.mepPctLow}-${bldg.mepPctHigh}% of total construction — industry benchmark range for this building type</li>
+      <li><strong>Trade split:</strong> Mech ${split.mech.toFixed(0)}% / Elec ${split.elec.toFixed(0)}% / Plumb ${split.plumb.toFixed(0)}% / FP ${split.fp.toFixed(0)}% ${(ovrMech||ovrElec||ovrPlumb||ovrFP) ? '(user override applied)' : '(default for building type)'}</li>
+      <li><strong>Building type note:</strong> ${bldg.notes}</li>
+      <li><strong>Not included:</strong> Site utilities, specialty systems (medical gas, lab exhaust, clean rooms), owner-furnished equipment, design fees, contingency</li>
+      <li><strong>This is a ROM estimate (-25%/+50%)</strong> — suitable for early feasibility and budgeting. Not for bidding or contract purposes.</li>
+    </ul>
+  `;
+}
+
+function fmt(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000) return Math.round(n).toLocaleString();
+  return n.toFixed(0);
+}
+
+recalc();
+
+// --- V2: Project state integration ---
+function writeProjectState() {
+  if (typeof MEPCalc === 'undefined') return;
+  const typeKey = document.getElementById('buildingType').value;
+  const sqft = parseInt(document.getElementById('sqft').value) || 50000;
+  const locVal = document.getElementById('location').value;
+  const bldg = BUILDING_DATA[typeKey];
+  const locFactor = parseFloat(locVal) || 1.0;
+  const qualMult = QUALITY_MULT[document.getElementById('quality').value];
+  const totalCost = bldg.totalCostPerSF * locFactor * qualMult * sqft;
+  const mepMid = totalCost * (bldg.mepPctMid / 100);
+
+  // Trade breakdown for downstream tools (healthcare adder, scope gap)
+  const split = bldg.tradeSplit;
+  const splitTotal = split.mech + split.elec + split.plumb + split.fp;
+
+  MEPCalc.saveProject({
+    buildingType: typeKey,
+    sqft: sqft,
+    location: locVal,
+    locationLabel: MEPCalc.getLocationLabel(locVal),
+    quality: document.getElementById('quality').value,
+    totalCost: Math.round(totalCost),
+    mepCost: Math.round(mepMid),
+    mepPct: bldg.mepPctMid,
+    mepBreakdown: {
+      mech: Math.round(mepMid * split.mech / splitTotal),
+      elec: Math.round(mepMid * split.elec / splitTotal),
+      plumb: Math.round(mepMid * split.plumb / splitTotal),
+      fp: Math.round(mepMid * split.fp / splitTotal),
+    },
+  });
+}
+
+// Prefill from project state
+if (typeof MEPCalc !== 'undefined' && MEPCalc.hasProject()) {
+  MEPCalc.prefillFromProject({
+    buildingType: 'buildingType',
+    sqft: 'sqft',
+    location: 'location',
+    quality: 'quality',
+  });
+  recalc();
+}
+
+// Write state on every recalc
+const origRecalc = recalc;
+recalc = function() { origRecalc(); writeProjectState(); };
+
+// Continue-to buttons
+document.addEventListener('DOMContentLoaded', function() {
+  const bp = document.getElementById('breakdownPanel');
+  if (bp && typeof MEPCalc !== 'undefined') {
+    const btns = [
+      {tool: 'general-conditions', label: 'General Conditions'},
+      {tool: 'scope-gap-matrix', label: 'Scope Gap Matrix'},
+      {tool: 'plenum-space', label: 'Plenum Feasibility'},
+    ];
+    const typeKey = document.getElementById('buildingType').value;
+    if (['senior-living','hospital','outpatient'].includes(typeKey)) {
+      btns.splice(1, 0, {tool: 'healthcare-adder', label: 'Healthcare MEP Adder'});
+    }
+    MEPCalc.renderContinueButtons(bp, btns);
+  }
+});
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #eee;padding:12px 16px;font-size:12px;color:#777;text-align:center;z-index:9999;">This site uses cookies for ads. <a href="https://thehivemakes.com/privacy.html" style="color:#2563eb">Privacy Policy</a>. <button onclick="document.getElementById('cookie-banner').style.display='none';localStorage.setItem('cookie-ok','1');" style="margin-left:12px;padding:4px 14px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Got it</button></div>
+<script>if(!localStorage.getItem("cookie-ok"))document.getElementById("cookie-banner").style.display="block";</script>
+</body>
+</html>

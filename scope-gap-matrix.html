@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>MEP Scope Gap & Responsibility Matrix Builder | MEPCalc</title>
+<meta name="description" content="Free MEP scope gap responsibility matrix builder. Generate structured trade interface checklists organized by CSI Division for commercial construction preconstruction.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a1a;background:#fafafa;line-height:1.5}
+.container{max-width:1100px;margin:0 auto;padding:16px}
+header{background:#fff;border-bottom:2px solid #1a1a1a;padding:16px 0}
+header .container{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.logo{font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#1a1a1a;text-decoration:none}
+.logo span{color:#2563eb}
+nav a{color:#555;text-decoration:none;font-size:14px;margin-left:16px}
+nav a:hover{color:#1a1a1a}
+h1{font-size:24px;font-weight:700;margin:24px 0 8px;letter-spacing:-0.5px}
+.subtitle{color:#555;font-size:15px;margin-bottom:24px}
+.controls{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.control-group{display:flex;flex-direction:column;gap:4px}
+.control-group label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#555}
+select,input[type="text"]{padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:14px;background:#fff;min-width:180px}
+select:focus,input:focus{outline:none;border-color:#2563eb}
+.btn{padding:8px 16px;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s}
+.btn-primary{background:#1a1a1a;color:#fff}
+.btn-primary:hover{background:#333}
+.btn-secondary{background:#fff;color:#1a1a1a;border:1px solid #ccc}
+.btn-secondary:hover{background:#f5f5f5}
+.btn-sm{padding:6px 10px;font-size:12px}
+.stats{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.stat{background:#fff;border:1px solid #ddd;border-radius:6px;padding:12px 16px;flex:1;min-width:140px}
+.stat-value{font-size:22px;font-weight:700}
+.stat-label{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.5px}
+.stat-assigned .stat-value{color:#16a34a}
+.stat-unassigned .stat-value{color:#dc2626}
+.section{margin-bottom:24px}
+.section-header{background:#fff;border:1px solid #ddd;border-radius:6px 6px 0 0;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.section-header:hover{background:#f9f9f9}
+.section-title{font-size:16px;font-weight:700}
+.section-count{font-size:13px;color:#555}
+.section-body{border:1px solid #ddd;border-top:none;border-radius:0 0 6px 6px;overflow:hidden}
+.scope-item{display:grid;grid-template-columns:1fr 180px;gap:8px;padding:10px 16px;border-bottom:1px solid #eee;align-items:center;font-size:14px}
+.scope-item:last-child{border-bottom:none}
+.scope-item:nth-child(even){background:#fafafa}
+.scope-item:hover{background:#f0f4ff}
+.scope-desc{padding-right:8px}
+.scope-desc .item-note{font-size:12px;color:#777;margin-top:2px}
+.scope-item select{padding:6px 8px;font-size:13px;min-width:auto;width:100%}
+.scope-item select.assigned{border-color:#16a34a;background:#f0fdf4}
+.scope-item select.unassigned{border-color:#fbbf24;background:#fffbeb}
+.custom-item-form{padding:12px 16px;background:#f5f5f5;border-top:1px solid #eee;display:flex;gap:8px;flex-wrap:wrap}
+.custom-item-form input{flex:1;min-width:200px}
+.section-body.collapsed{display:none}
+.toggle-icon{font-size:12px;transition:transform 0.2s}
+.toggle-icon.collapsed{transform:rotate(-90deg)}
+.export-bar{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.export-bar .spacer{flex:1}
+.methodology{background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin-top:24px;font-size:14px}
+.methodology h2{font-size:18px;margin-bottom:12px}
+.methodology p,.methodology li{color:#444;margin-bottom:8px}
+.methodology ul{padding-left:20px}
+.project-info{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px}
+.project-info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.project-info-grid input{width:100%}
+footer{text-align:center;padding:24px;font-size:13px;color:#777;border-top:1px solid #eee;margin-top:32px}
+footer a{color:#555;text-decoration:none}
+footer a:hover{color:#1a1a1a}
+@media(max-width:768px){
+  .scope-item{grid-template-columns:1fr;gap:4px}
+  .controls{flex-direction:column}
+  select,input[type="text"]{min-width:100%}
+  .stats{flex-direction:column}
+  .stat{min-width:100%}
+}
+.bl-item{display:grid;gap:4px;padding:8px 16px;border-bottom:1px solid #eee;font-size:13px}
+.bl-item:nth-child(even){background:#fafafa}
+.bl-item:hover{background:#f0f4ff}
+.bl-desc{grid-column:1/-1;padding-bottom:4px}
+.bl-cells{display:grid;gap:4px}
+.bl-cell select{padding:4px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:100%}
+.bl-cell select.bl-included{border-color:#16a34a;background:#f0fdf4}
+.bl-cell select.bl-excluded{border-color:#dc2626;background:#fef2f2}
+.bl-cell select.bl-silent{border-color:#f59e0b;background:#fffbeb}
+.bl-cell select.bl-clarify{border-color:#7c3aed;background:#f5f3ff}
+.bl-header{font-size:11px;font-weight:600;color:#555;text-align:center;padding:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bl-summary{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px}
+.bl-summary h3{font-size:14px;font-weight:700;margin-bottom:8px}
+.bl-summary table{width:100%;border-collapse:collapse;font-size:13px}
+.bl-summary th,.bl-summary td{padding:6px 8px;border:1px solid #eee;text-align:center}
+.bl-summary th{background:#f5f5f5;font-weight:600}
+.bl-risk{color:#dc2626;font-weight:700}
+@media print{
+  body{background:#fff}
+  .controls,.export-bar,.custom-item-form,.btn,.methodology,footer,nav,header,#bidLevelSetup{display:none!important}
+  .section-body.collapsed{display:block!important}
+  .scope-item select,.bl-cell select{border:none;background:none;-webkit-appearance:none;appearance:none}
+  .project-info{border:2px solid #1a1a1a}
+}
+</style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8335376690790226" crossorigin="anonymous"></script>
+</head>
+<body>
+<header>
+<div class="container">
+<a href="index.html" class="logo">MEP<span>Calc</span></a>
+<nav>
+<a href="index.html">All Tools</a>
+<a href="general-conditions.html">Gen. Conditions</a>
+<a href="electrical-room.html">Elec. Room Sizing</a>
+</nav>
+</div>
+</header>
+
+<div class="container">
+<h1>MEP Scope Gap & Responsibility Matrix Builder</h1>
+<p class="subtitle">Generate a structured responsibility matrix for MEP trade interfaces. Assign responsibility for common scope gap items to prevent change orders.</p>
+
+<div class="project-info">
+<h3 style="margin-bottom:12px;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;color:#555">Project Information</h3>
+<div class="project-info-grid">
+<div class="control-group">
+<label>Project Name</label>
+<input type="text" id="projectName" placeholder="e.g., Sunrise Senior Living - Phase 2">
+</div>
+<div class="control-group">
+<label>Project Number</label>
+<input type="text" id="projectNumber" placeholder="e.g., 2026-0142">
+</div>
+<div class="control-group">
+<label>Date</label>
+<input type="text" id="projectDate" value="">
+</div>
+<div class="control-group">
+<label>Prepared By</label>
+<input type="text" id="preparedBy" placeholder="e.g., Preconstruction Team">
+</div>
+</div>
+</div>
+
+<div class="controls">
+<div class="control-group">
+<label>Mode</label>
+<div style="display:flex;gap:4px">
+<button class="btn btn-primary btn-sm" id="modeStd" onclick="setMode('standard')">Standard</button>
+<button class="btn btn-secondary btn-sm" id="modeBL" onclick="setMode('bidlevel')">Bid Leveling</button>
+</div>
+</div>
+<div class="control-group">
+<label>Building Type</label>
+<select id="buildingType">
+<option value="all">All Scope Items</option>
+<option value="healthcare">Healthcare / Senior Living</option>
+<option value="education">Education (K-12 / Higher Ed)</option>
+<option value="commercial">Commercial Office</option>
+<option value="industrial">Industrial / Warehouse</option>
+</select>
+</div>
+<div class="control-group" id="quickAssignGroup">
+<label>Quick Assign</label>
+<select id="quickAssign">
+<option value="">— Select action —</option>
+<option value="typical">Apply Typical Assignments</option>
+<option value="clear">Clear All Assignments</option>
+</select>
+</div>
+<div class="control-group" style="align-self:end">
+<button class="btn btn-primary" onclick="applyQuickAssign()">Apply</button>
+</div>
+</div>
+
+<div id="bidLevelSetup" style="display:none;background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;margin-bottom:20px">
+<h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Subcontractor Setup</h3>
+<p style="font-size:12px;color:#555;margin-bottom:12px">Enter sub names for bid comparison. For each scope item, mark whether each sub's bid includes, excludes, or is silent on the item.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px" id="subInputs">
+<div><label style="font-size:11px;font-weight:600;color:#555">Sub 1</label><input type="text" id="sub-0" placeholder="e.g., ABC Mechanical" class="sub-name" onchange="renderMatrix()"></div>
+<div><label style="font-size:11px;font-weight:600;color:#555">Sub 2</label><input type="text" id="sub-1" placeholder="e.g., Johnson Controls" class="sub-name" onchange="renderMatrix()"></div>
+<div><label style="font-size:11px;font-weight:600;color:#555">Sub 3</label><input type="text" id="sub-2" placeholder="e.g., Comfort Systems" class="sub-name" onchange="renderMatrix()"></div>
+<div><label style="font-size:11px;font-weight:600;color:#555">Sub 4</label><input type="text" id="sub-3" placeholder="Optional" class="sub-name" onchange="renderMatrix()"></div>
+<div><label style="font-size:11px;font-weight:600;color:#555">Sub 5</label><input type="text" id="sub-4" placeholder="Optional" class="sub-name" onchange="renderMatrix()"></div>
+</div>
+</div>
+
+<div class="stats" id="statsBar">
+<div class="stat"><div class="stat-value" id="totalItems">0</div><div class="stat-label">Total Items</div></div>
+<div class="stat stat-assigned"><div class="stat-value" id="assignedItems">0</div><div class="stat-label">Assigned</div></div>
+<div class="stat stat-unassigned"><div class="stat-value" id="unassignedItems">0</div><div class="stat-label">Unassigned</div></div>
+<div class="stat"><div class="stat-value" id="completionPct">0%</div><div class="stat-label">Complete</div></div>
+</div>
+
+<div class="export-bar">
+<button class="btn btn-secondary" onclick="expandAll()">Expand All</button>
+<button class="btn btn-secondary" onclick="collapseAll()">Collapse All</button>
+<div class="spacer"></div>
+<button class="btn btn-secondary" onclick="saveToURL()">Copy Share Link</button>
+<button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+<button class="btn btn-primary" onclick="window.print()">Print / PDF</button>
+</div>
+
+<div id="matrixContainer"></div>
+
+<div class="methodology">
+<h2>How This Works</h2>
+<p>MEP scope gaps occur at the interfaces between mechanical, electrical, plumbing, and fire protection trades. These gaps — when unassigned — become change orders during construction, typically costing 5-15% of contract value.</p>
+<p>This tool provides a structured checklist of the most common scope gap items, organized by trade interface. For each item, assign which party is responsible: General Contractor, Mechanical, Electrical, Plumbing, Fire Protection, Controls/BAS, or Owner.</p>
+<p><strong>How to use:</strong></p>
+<ul>
+<li>Review each scope gap item and assign responsibility using the dropdown</li>
+<li>Use "Apply Typical Assignments" to pre-fill with industry-standard defaults, then adjust for your project</li>
+<li>Add custom items at the bottom of any section for project-specific scope gaps</li>
+<li>Export as CSV for your bid package, or print directly as a PDF matrix</li>
+<li>Share a link that preserves all your selections (encoded in URL)</li>
+</ul>
+<p><strong>Sources:</strong> Scope gap items compiled from AGC/ASA scope of work references, SMACNA coordination guidelines, NEC 110.26/430.102(B), ASHRAE commissioning standards, and published MEP coordination resources including HKA MEP interface studies and MEP Academy coordination checklists.</p>
+</div>
+</div>
+
+<footer>
+<p>Built by <a href="https://www.linkedin.com/in/build-ai-for-good/" target="_blank">The Architect of The Hive</a> · <a href="https://thehivemakes.com" target="_blank">thehivemakes.com</a> · <a href="https://thehivemakes.com/privacy.html" style="color:#999;font-size:11px;">Privacy</a> · <a href="https://thehivemakes.com/terms.html" style="color:#999;font-size:11px;">Terms</a> · <a href="https://thehivemakes.com/disclosures.html" style="color:#999;font-size:11px;">Disclosures</a> &middot; Free tools for people who build things &middot; <a href="index.html">MEPCalc</a></p>
+</footer>
+
+<script src="mepcalc-core.js"></script>
+<script>
+const PARTIES = ['— Unassigned —','General Contractor','Mechanical','Electrical','Plumbing','Fire Protection','Controls / BAS','Owner','By Specification'];
+
+const SCOPE_DATA = [
+{
+  id: 'mech-elec',
+  title: 'Mechanical \u2194 Electrical Interfaces',
+  items: [
+    {desc:'Power supply and feeders to HVAC equipment (AHUs, RTUs, pumps, fans)',typical:'Electrical',note:'NEC requires disconnect within sight of equipment'},
+    {desc:'Equipment disconnect switches for motors (NEC 430.102(B))',typical:'Electrical',note:'RTUs, exhaust fans, pumps — frequently missed'},
+    {desc:'Duct-mounted smoke detector power supply',typical:'Electrical',note:'Fire alarm interface — verify with Division 28'},
+    {desc:'Wiring for smoke detector HVAC shutdown sequences',typical:'Electrical',note:'Interlock wiring between fire alarm and HVAC controls'},
+    {desc:'Control transformers for HVAC equipment',typical:'Electrical',note:'120V to 24V — who provides and installs?'},
+    {desc:'Interlock wiring between HVAC systems',typical:'Controls / BAS',note:'E.g., boiler/chiller staging, economizer lockouts'},
+    {desc:'VFD power wiring and conduit',typical:'Electrical',note:''},
+    {desc:'VFD communication / BACnet wiring',typical:'Controls / BAS',note:'Network wiring to BAS panels'},
+    {desc:'Branch circuit wiring to exhaust fans',typical:'Electrical',note:'Including kitchen, bathroom, lab exhaust'},
+    {desc:'Local disconnects for air handling units',typical:'Electrical',note:'NEC 440.14 — within sight of equipment'},
+    {desc:'Emergency/standby power connections to mechanical loads',typical:'Electrical',note:'Transfer switch to mechanical equipment'},
+    {desc:'Circuiting and wiring for unit heaters',typical:'Electrical',note:'Gas and electric — verify fuel connection separately'},
+    {desc:'Receptacles near mechanical equipment for service/maintenance',typical:'Electrical',note:'NEC 210.63 — HVAC equipment service outlet'},
+    {desc:'Lighting controls interlocked with HVAC occupancy',typical:'Controls / BAS',note:'Shared occupancy sensors — who provides?'},
+    {desc:'Cable tray routing coordination with ductwork',typical:'Electrical',note:'Spatial coordination in ceiling plenum'},
+    {desc:'Bus duct routing coordination with overhead piping',typical:'Electrical',note:''},
+    {desc:'Electrical connections to packaged rooftop units',typical:'Electrical',note:'Power, controls, and communication'},
+    {desc:'Power to building automation system (BAS) panels',typical:'Electrical',note:'Dedicated circuit required'},
+    {desc:'Seismic bracing coordination — electrical vs mechanical',typical:'General Contractor',note:'Who coordinates when both trades brace in same area?'},
+    {desc:'Feeders to mechanical equipment room panels/disconnects',typical:'Electrical',note:''},
+  ]
+},
+{
+  id: 'mech-plumb',
+  title: 'Mechanical \u2194 Plumbing Interfaces',
+  items: [
+    {desc:'Condensate drain piping from HVAC equipment to building drain',typical:'Plumbing',note:'Air gap or trap — verify code requirement'},
+    {desc:'Makeup water piping to cooling towers / boilers',typical:'Plumbing',note:'Includes backflow preventer'},
+    {desc:'Glycol fill / makeup connections for hydronic systems',typical:'Mechanical',note:''},
+    {desc:'Hot water supply piping to HVAC reheat coils',typical:'Plumbing',note:'Or mechanical — depends on contract structure'},
+    {desc:'Below-slab drainage conflicts with mechanical piping',typical:'Plumbing',note:'Coordinate elevations early'},
+    {desc:'Chilled water piping coordination with plumbing risers',typical:'Mechanical',note:'Shared shaft space'},
+    {desc:'Expansion tanks — supply piping and connections',typical:'Mechanical',note:''},
+    {desc:'Backflow preventers for mechanical system fill',typical:'Plumbing',note:'Code requirement — whose scope?'},
+    {desc:'Natural gas piping to mechanical equipment',typical:'Plumbing',note:'Gas boilers, unit heaters, kitchen makeup air'},
+    {desc:'Roof drain leader relocation for rooftop mechanical equipment',typical:'Plumbing',note:'Frequently missed in reroof/RTU replacement'},
+  ]
+},
+{
+  id: 'plumb-fp',
+  title: 'Plumbing \u2194 Fire Protection Interfaces',
+  items: [
+    {desc:'Combined vs separate water service entrance',typical:'General Contractor',note:'Design decision — GC coordinates'},
+    {desc:'Domestic water vs fire service backflow preventer responsibility',typical:'By Specification',note:'Often split — verify spec sections'},
+    {desc:'Fire department connection (FDC) piping to building',typical:'Fire Protection',note:''},
+    {desc:'Test drain piping from sprinkler risers to building drain',typical:'Plumbing',note:'Fire protection provides to 2" above floor — plumbing connects'},
+    {desc:'Underground water main from street to building (fire + domestic)',typical:'General Contractor',note:'Sitework scope — frequently a gap'},
+    {desc:'Standpipe drain connections',typical:'Fire Protection',note:''},
+    {desc:'Fire pump suction piping and test header drainage',typical:'Fire Protection',note:'Test header drain to plumbing system'},
+    {desc:'Glycol systems for dry/pre-action sprinkler in parking garages',typical:'Fire Protection',note:''},
+  ]
+},
+{
+  id: 'mep-gc',
+  title: 'All MEP \u2194 General Contractor Interfaces',
+  items: [
+    {desc:'Concrete housekeeping pads for mechanical/electrical equipment',typical:'General Contractor',note:'Classic scope gap — RTU pads, pump pads, transformer pads'},
+    {desc:'Roof penetrations, flashing, and weatherproofing',typical:'General Contractor',note:'MEP makes penetration, GC/roofer flashes and seals'},
+    {desc:'Fire stopping and firesafing at all MEP penetrations',typical:'General Contractor',note:'Per IBC 714 — verify who tests'},
+    {desc:'Sleeve installation in concrete/masonry for MEP',typical:'General Contractor',note:'MEP provides sleeves — GC installs in formwork?'},
+    {desc:'Temporary power during construction',typical:'General Contractor',note:''},
+    {desc:'Temporary water during construction',typical:'General Contractor',note:''},
+    {desc:'Temporary heat during construction',typical:'General Contractor',note:'Often falls to mechanical or GC'},
+    {desc:'Drywall/ceiling tile removal and replacement for above-ceiling MEP work',typical:'General Contractor',note:'Renovation scope — who patches?'},
+    {desc:'Painting of exposed MEP (pipes, ductwork, conduit in exposed ceiling)',typical:'General Contractor',note:''},
+    {desc:'Equipment rigging, hoisting, and setting (large MEP equipment)',typical:'By Specification',note:'RTUs, chillers, generators, transformers'},
+    {desc:'Excavation and backfill for underground MEP utilities',typical:'General Contractor',note:''},
+    {desc:'Structural support/dunnage for rooftop MEP equipment',typical:'General Contractor',note:'Steel dunnage, curbs, rails'},
+    {desc:'Vibration isolation bases — who provides, who installs?',typical:'Mechanical',note:'Inertia bases for rotating equipment'},
+    {desc:'Access doors in walls/ceilings for MEP valves and devices',typical:'General Contractor',note:'MEP identifies locations — GC installs doors'},
+    {desc:'Bollard protection for exterior MEP equipment',typical:'General Contractor',note:'Transformers, gas meters, etc.'},
+    {desc:'Testing and balancing (TAB) of HVAC systems',typical:'Mechanical',note:'Verify scope — some owners direct-contract TAB'},
+    {desc:'Commissioning support from MEP trades',typical:'By Specification',note:'Third-party Cx agent — MEP trades provide support labor'},
+    {desc:'Permit fees for MEP trades',typical:'By Specification',note:'Sometimes GC carries all permits, sometimes by trade'},
+  ]
+},
+{
+  id: 'mep-controls',
+  title: 'MEP \u2194 Controls / BAS Interfaces',
+  items: [
+    {desc:'Control wiring from equipment to BAS panels',typical:'Controls / BAS',note:'Conduit by electrical, wire by controls?'},
+    {desc:'Conduit for control wiring',typical:'Electrical',note:'Verify — some specs put conduit under controls'},
+    {desc:'Field devices (sensors, thermostats) — furnish and install',typical:'Controls / BAS',note:''},
+    {desc:'Power supply to BAS panels and controllers',typical:'Electrical',note:'Dedicated circuit'},
+    {desc:'Integration of fire alarm signals with BAS',typical:'Controls / BAS',note:'Shutdown signals, smoke control sequences'},
+    {desc:'BACnet/IP network infrastructure (switches, cabling)',typical:'Electrical',note:'Division 27 scope? Division 25? Verify.'},
+    {desc:'Point-to-point checkout and functional testing',typical:'Controls / BAS',note:''},
+    {desc:'Pneumatic-to-DDC conversion (renovation projects)',typical:'Controls / BAS',note:'Including removal of pneumatic tubing'},
+    {desc:'Graphic interface / front-end software licensing',typical:'Controls / BAS',note:'Ongoing cost — owner or controls contractor?'},
+    {desc:'Sequence of operations documentation',typical:'Controls / BAS',note:'Engineer provides basis — controls contractor details'},
+  ]
+},
+{
+  id: 'mep-arch',
+  title: 'MEP \u2194 Architectural Interfaces',
+  items: [
+    {desc:'Ceiling grid coordination with diffusers, lights, sprinklers, speakers',typical:'General Contractor',note:'Reflected ceiling plan — who leads coordination?'},
+    {desc:'Wall penetrations for MEP — patching and finishing',typical:'General Contractor',note:''},
+    {desc:'Floor penetrations — core drilling vs cast-in-place sleeves',typical:'General Contractor',note:'Post-tension slabs require X-ray first'},
+    {desc:'Access panels for MEP valves and dampers above ceiling',typical:'General Contractor',note:'MEP locates, GC furnishes and installs'},
+    {desc:'Acoustic treatments around ductwork and piping',typical:'Mechanical',note:'Duct liner, external wrap, vibration isolation'},
+    {desc:'Light fixture coordination with ductwork and sprinkler heads',typical:'General Contractor',note:'Spatial conflict in tight plenum spaces'},
+    {desc:'Wall-mounted thermostat and control device locations',typical:'Controls / BAS',note:'Coordinate with architectural elevations'},
+    {desc:'Floor drain locations for mechanical/electrical rooms',typical:'Plumbing',note:'Often missing from architectural floor plans'},
+    {desc:'Louver and intake/exhaust openings in exterior walls',typical:'General Contractor',note:'Architectural provides opening — mechanical provides louver?'},
+    {desc:'Kitchen hood exhaust ductwork routing through building',typical:'Mechanical',note:'Fire wrap, shaft enclosure — GC or mechanical?'},
+  ]
+}
+];
+
+// Typical assignment map for quick-assign
+const TYPICAL_MAP = {};
+SCOPE_DATA.forEach(section => {
+  section.items.forEach((item, i) => {
+    TYPICAL_MAP[section.id + '-' + i] = item.typical;
+  });
+});
+
+let customItems = {};
+
+function init() {
+  document.getElementById('projectDate').value = new Date().toLocaleDateString('en-US');
+  loadFromURL();
+  renderMatrix();
+  updateStats();
+}
+
+function renderMatrix() {
+  const container = document.getElementById('matrixContainer');
+  container.innerHTML = '';
+  const filter = document.getElementById('buildingType').value;
+
+  SCOPE_DATA.forEach(section => {
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'section';
+
+    const items = section.items;
+    const customs = customItems[section.id] || [];
+    const totalCount = items.length + customs.length;
+
+    sectionEl.innerHTML = `
+      <div class="section-header" onclick="toggleSection('${section.id}')">
+        <div>
+          <span class="section-title">${section.title}</span>
+          <span class="section-count">${totalCount} items</span>
+        </div>
+        <span class="toggle-icon" id="icon-${section.id}">&#9660;</span>
+      </div>
+      <div class="section-body" id="body-${section.id}">
+        ${items.map((item, i) => renderItem(section.id, i, item)).join('')}
+        ${customs.map((item, i) => renderItem(section.id, 'c' + i, item, true)).join('')}
+        <div class="custom-item-form">
+          <input type="text" id="custom-${section.id}" placeholder="Add custom scope gap item...">
+          <button class="btn btn-secondary btn-sm" onclick="addCustomItem('${section.id}')">+ Add</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(sectionEl);
+  });
+}
+
+function renderItem(sectionId, index, item, isCustom) {
+  const key = sectionId + '-' + index;
+  const saved = getSavedAssignment(key);
+  const assignedClass = saved && saved !== '' ? 'assigned' : 'unassigned';
+
+  return `
+    <div class="scope-item">
+      <div class="scope-desc">
+        ${item.desc}
+        ${item.note ? '<div class="item-note">' + item.note + '</div>' : ''}
+      </div>
+      <select class="${assignedClass}" id="sel-${key}" onchange="onAssign('${key}', this)">
+        ${PARTIES.map((p, pi) => `<option value="${pi === 0 ? '' : p}" ${saved === p ? 'selected' : (pi === 0 && !saved ? 'selected' : '')}>${p}</option>`).join('')}
+      </select>
+    </div>
+  `;
+}
+
+function onAssign(key, el) {
+  el.className = el.value ? 'assigned' : 'unassigned';
+  saveAssignment(key, el.value);
+  updateStats();
+}
+
+function saveAssignment(key, value) {
+  const data = getAssignments();
+  data[key] = value;
+  try { localStorage.setItem('mepcalc-scope', JSON.stringify(data)); } catch(e) {}
+}
+
+function getSavedAssignment(key) {
+  return getAssignments()[key] || '';
+}
+
+function getAssignments() {
+  try {
+    return JSON.parse(localStorage.getItem('mepcalc-scope') || '{}');
+  } catch(e) { return {}; }
+}
+
+function updateStats() {
+  let total = 0, assigned = 0;
+  document.querySelectorAll('.scope-item select').forEach(sel => {
+    total++;
+    if (sel.value) assigned++;
+  });
+  document.getElementById('totalItems').textContent = total;
+  document.getElementById('assignedItems').textContent = assigned;
+  document.getElementById('unassignedItems').textContent = total - assigned;
+  document.getElementById('completionPct').textContent = total ? Math.round(assigned/total*100) + '%' : '0%';
+}
+
+function toggleSection(id) {
+  const body = document.getElementById('body-' + id);
+  const icon = document.getElementById('icon-' + id);
+  body.classList.toggle('collapsed');
+  icon.classList.toggle('collapsed');
+}
+
+function expandAll() {
+  document.querySelectorAll('.section-body').forEach(b => b.classList.remove('collapsed'));
+  document.querySelectorAll('.toggle-icon').forEach(i => i.classList.remove('collapsed'));
+}
+
+function collapseAll() {
+  document.querySelectorAll('.section-body').forEach(b => b.classList.add('collapsed'));
+  document.querySelectorAll('.toggle-icon').forEach(i => i.classList.add('collapsed'));
+}
+
+function applyQuickAssign() {
+  const action = document.getElementById('quickAssign').value;
+  if (!action) return;
+
+  if (action === 'typical') {
+    SCOPE_DATA.forEach(section => {
+      section.items.forEach((item, i) => {
+        const key = section.id + '-' + i;
+        const sel = document.getElementById('sel-' + key);
+        if (sel && item.typical) {
+          sel.value = item.typical;
+          sel.className = 'assigned';
+          saveAssignment(key, item.typical);
+        }
+      });
+    });
+  } else if (action === 'clear') {
+    document.querySelectorAll('.scope-item select').forEach(sel => {
+      sel.selectedIndex = 0;
+      sel.className = 'unassigned';
+    });
+    try { localStorage.removeItem('mepcalc-scope'); } catch(e) {}
+  }
+  updateStats();
+  document.getElementById('quickAssign').selectedIndex = 0;
+}
+
+function addCustomItem(sectionId) {
+  const input = document.getElementById('custom-' + sectionId);
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (!customItems[sectionId]) customItems[sectionId] = [];
+  customItems[sectionId].push({desc: text, note: 'Custom item', typical: ''});
+  input.value = '';
+  renderMatrix();
+  updateStats();
+}
+
+function saveToURL() {
+  const data = getAssignments();
+  const project = {
+    name: document.getElementById('projectName').value,
+    number: document.getElementById('projectNumber').value,
+    date: document.getElementById('projectDate').value,
+    by: document.getElementById('preparedBy').value
+  };
+  const payload = JSON.stringify({a: data, p: project});
+  const encoded = btoa(unescape(encodeURIComponent(payload)));
+  const url = window.location.origin + window.location.pathname + '?d=' + encoded;
+
+  navigator.clipboard.writeText(url).then(() => {
+    alert('Share link copied to clipboard!');
+  }).catch(() => {
+    prompt('Copy this link:', url);
+  });
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const d = params.get('d');
+  if (d) {
+    try {
+      const payload = JSON.parse(decodeURIComponent(escape(atob(d))));
+      if (payload.a) {
+        try { localStorage.setItem('mepcalc-scope', JSON.stringify(payload.a)); } catch(e) {}
+      }
+      if (payload.p) {
+        if (payload.p.name) document.getElementById('projectName').value = payload.p.name;
+        if (payload.p.number) document.getElementById('projectNumber').value = payload.p.number;
+        if (payload.p.date) document.getElementById('projectDate').value = payload.p.date;
+        if (payload.p.by) document.getElementById('preparedBy').value = payload.p.by;
+      }
+    } catch(e) {}
+  }
+}
+
+function exportCSV() {
+  const project = document.getElementById('projectName').value || 'Project';
+  let csv = 'Section,Scope Gap Item,Note,Responsible Party\n';
+
+  SCOPE_DATA.forEach(section => {
+    section.items.forEach((item, i) => {
+      const key = section.id + '-' + i;
+      const assigned = getSavedAssignment(key) || 'UNASSIGNED';
+      csv += `"${section.title}","${item.desc}","${item.note || ''}","${assigned}"\n`;
+    });
+    (customItems[section.id] || []).forEach((item, i) => {
+      const key = section.id + '-c' + i;
+      const assigned = getSavedAssignment(key) || 'UNASSIGNED';
+      csv += `"${section.title}","${item.desc}","Custom item","${assigned}"\n`;
+    });
+  });
+
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = project.replace(/[^a-z0-9]/gi, '_') + '_Scope_Gap_Matrix.csv';
+  a.click();
+}
+
+document.getElementById('buildingType').addEventListener('change', () => {
+  renderMatrix();
+  updateStats();
+});
+
+// =============================================
+// BID LEVELING MODE
+// =============================================
+let currentMode = 'standard';
+const BL_OPTIONS = ['','Included','Excluded','Silent','Clarify'];
+const BL_CLASSES = {'':'','Included':'bl-included','Excluded':'bl-excluded','Silent':'bl-silent','Clarify':'bl-clarify'};
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeStd').className = mode === 'standard' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+  document.getElementById('modeBL').className = mode === 'bidlevel' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm';
+  document.getElementById('bidLevelSetup').style.display = mode === 'bidlevel' ? 'block' : 'none';
+  document.getElementById('quickAssignGroup').style.display = mode === 'standard' ? 'flex' : 'none';
+  renderMatrix();
+  updateStats();
+}
+
+function getActiveSubs() {
+  const subs = [];
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById('sub-' + i);
+    const name = el ? el.value.trim() : '';
+    if (name) subs.push({index: i, name: name});
+  }
+  return subs.length > 0 ? subs : [{index: 0, name: 'Sub 1'}, {index: 1, name: 'Sub 2'}, {index: 2, name: 'Sub 3'}];
+}
+
+function getBLData() {
+  try { return JSON.parse(localStorage.getItem('mepcalc-bidlevel') || '{}'); } catch(e) { return {}; }
+}
+function saveBLData(key, subIdx, value) {
+  const d = getBLData();
+  if (!d[key]) d[key] = {};
+  d[key][subIdx] = value;
+  try { localStorage.setItem('mepcalc-bidlevel', JSON.stringify(d)); } catch(e) {}
+}
+
+// Override renderMatrix for bid leveling mode
+const origRenderMatrix = renderMatrix;
+renderMatrix = function() {
+  if (currentMode === 'standard') { origRenderMatrix(); return; }
+
+  const container = document.getElementById('matrixContainer');
+  container.innerHTML = '';
+  const subs = getActiveSubs();
+  const blData = getBLData();
+
+  // Bid level summary
+  const summaryDiv = document.createElement('div');
+  summaryDiv.className = 'bl-summary';
+  summaryDiv.id = 'blSummary';
+  container.appendChild(summaryDiv);
+
+  SCOPE_DATA.forEach(section => {
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'section';
+
+    const cols = subs.length;
+    const gridCols = `1fr repeat(${cols}, 90px)`;
+
+    let itemsHTML = `<div style="display:grid;grid-template-columns:${gridCols};gap:4px;padding:8px 16px;border-bottom:1px solid #ddd">
+      <div style="font-size:11px;font-weight:600;color:#555">SCOPE ITEM</div>
+      ${subs.map(s => `<div class="bl-header">${s.name}</div>`).join('')}
+    </div>`;
+
+    section.items.forEach((item, i) => {
+      const key = section.id + '-' + i;
+      const rowData = blData[key] || {};
+
+      itemsHTML += `<div class="bl-item" style="display:grid;grid-template-columns:${gridCols};gap:4px;align-items:center">
+        <div class="scope-desc">${item.desc}${item.note ? '<div class="item-note">' + item.note + '</div>' : ''}</div>
+        ${subs.map(s => {
+          const val = rowData[s.index] || '';
+          const cls = BL_CLASSES[val] || '';
+          return `<div class="bl-cell"><select class="${cls}" onchange="onBLChange('${key}',${s.index},this)">
+            ${BL_OPTIONS.map(o => `<option value="${o}" ${val===o?'selected':''}>${o || '—'}</option>`).join('')}
+          </select></div>`;
+        }).join('')}
+      </div>`;
+    });
+
+    sectionEl.innerHTML = `
+      <div class="section-header" onclick="toggleSection('${section.id}')">
+        <div><span class="section-title">${section.title}</span><span class="section-count">${section.items.length} items</span></div>
+        <span class="toggle-icon" id="icon-${section.id}">&#9660;</span>
+      </div>
+      <div class="section-body" id="body-${section.id}">${itemsHTML}</div>
+    `;
+    container.appendChild(sectionEl);
+  });
+
+  updateBLSummary();
+};
+
+function onBLChange(key, subIdx, el) {
+  saveBLData(key, subIdx, el.value);
+  el.className = BL_CLASSES[el.value] || '';
+  updateBLSummary();
+}
+
+function updateBLSummary() {
+  const subs = getActiveSubs();
+  const blData = getBLData();
+  const totals = {};
+  subs.forEach(s => { totals[s.index] = {included:0, excluded:0, silent:0, clarify:0, blank:0}; });
+
+  let totalItems = 0;
+  let riskItems = 0;
+
+  SCOPE_DATA.forEach(section => {
+    section.items.forEach((item, i) => {
+      const key = section.id + '-' + i;
+      const row = blData[key] || {};
+      totalItems++;
+
+      let hasInclude = false, hasExclude = false;
+      subs.forEach(s => {
+        const v = row[s.index] || '';
+        if (v === 'Included') { totals[s.index].included++; hasInclude = true; }
+        else if (v === 'Excluded') { totals[s.index].excluded++; hasExclude = true; }
+        else if (v === 'Silent') { totals[s.index].silent++; }
+        else if (v === 'Clarify') { totals[s.index].clarify++; }
+        else { totals[s.index].blank++; }
+      });
+
+      if (hasInclude && hasExclude) riskItems++;
+    });
+  });
+
+  const el = document.getElementById('blSummary');
+  el.innerHTML = `<h3>Bid Leveling Summary</h3>
+    <table>
+      <thead><tr><th>Subcontractor</th><th style="color:#16a34a">Included</th><th style="color:#dc2626">Excluded</th><th style="color:#f59e0b">Silent</th><th style="color:#7c3aed">Clarify</th><th>Unmarked</th></tr></thead>
+      <tbody>
+        ${subs.map(s => {
+          const t = totals[s.index];
+          return `<tr><td style="text-align:left;font-weight:600">${s.name}</td><td>${t.included}</td><td>${t.excluded}</td><td>${t.silent}</td><td>${t.clarify}</td><td>${t.blank}</td></tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <p style="margin-top:8px;font-size:13px">
+      <strong>${totalItems}</strong> scope items &middot;
+      <span class="bl-risk">${riskItems} conflict items</span> (one sub includes, another excludes same item)
+    </p>`;
+
+  // Update main stats bar too
+  const assigned = Object.keys(blData).length;
+  document.getElementById('totalItems').textContent = totalItems;
+  document.getElementById('assignedItems').textContent = assigned;
+  document.getElementById('unassignedItems').textContent = Math.max(0, totalItems - assigned);
+  document.getElementById('completionPct').textContent = totalItems ? Math.round(assigned/totalItems*100) + '%' : '0%';
+}
+
+// Override exportCSV for bid leveling
+const origExportCSV = exportCSV;
+exportCSV = function() {
+  if (currentMode === 'standard') { origExportCSV(); return; }
+
+  const project = document.getElementById('projectName').value || 'Project';
+  const subs = getActiveSubs();
+  const blData = getBLData();
+
+  let csv = 'Section,Scope Gap Item,Note,' + subs.map(s => '"' + s.name + '"').join(',') + '\n';
+
+  SCOPE_DATA.forEach(section => {
+    section.items.forEach((item, i) => {
+      const key = section.id + '-' + i;
+      const row = blData[key] || {};
+      csv += `"${section.title}","${item.desc}","${item.note || ''}"`;
+      subs.forEach(s => { csv += ',"' + (row[s.index] || 'UNMARKED') + '"'; });
+      csv += '\n';
+    });
+  });
+
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = project.replace(/[^a-z0-9]/gi, '_') + '_Bid_Leveling.csv';
+  a.click();
+};
+
+// --- V2: Project state integration ---
+if (typeof MEPCalc !== 'undefined' && MEPCalc.hasProject()) {
+  const p = MEPCalc.getProject();
+  if (p.name) document.getElementById('projectName').value = p.name;
+  if (p.number) document.getElementById('projectNumber').value = p.number;
+  if (p.date) document.getElementById('projectDate').value = p.date;
+}
+
+init();
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #eee;padding:12px 16px;font-size:12px;color:#777;text-align:center;z-index:9999;">This site uses cookies for ads. <a href="https://thehivemakes.com/privacy.html" style="color:#2563eb">Privacy Policy</a>. <button onclick="document.getElementById('cookie-banner').style.display='none';localStorage.setItem('cookie-ok','1');" style="margin-left:12px;padding:4px 14px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Got it</button></div>
+<script>if(!localStorage.getItem("cookie-ok"))document.getElementById("cookie-banner").style.display="block";</script>
+</body>
+</html>
