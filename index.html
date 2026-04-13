@@ -225,7 +225,7 @@ if (p.sqft) document.getElementById('ps-sqft').value = p.sqft;
 if (p.location) document.getElementById('ps-location').value = p.location;
 
 // --- Tool Request Form ---
-const GSHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbznzIskMQtWABbfoE_YmDnasyZ_YySrydME-N6Np3X2Fb7rezBEMUi6bdg1xQUN1lDB/exec';
+const GSHEET_WEBHOOK = 'https://musiciwant.com/api/mepcalc/request';
 
 function submitRequest() {
   const name = (document.getElementById('req-name').value || '').trim();
